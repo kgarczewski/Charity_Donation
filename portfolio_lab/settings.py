@@ -40,6 +40,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'charitydonation',
+    'pure_pagination',
 ]
 
 MIDDLEWARE = [
@@ -79,6 +80,7 @@ WSGI_APPLICATION = 'portfolio_lab.wsgi.application'
 DATABASES = {
     'default': {
         'HOST': '127.0.0.1',
+        'PORT': '5432',
         'ENGINE': 'django.db.backends.postgresql_psycopg2',
         'NAME': 'charity-donation',
         'USER': 'postgres',
@@ -127,3 +129,10 @@ STATIC_URL = 'static/'
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
+PAGINATION_SETTINGS = {
+    'PAGE_RANGE_DISPLAYED': 10,
+    'MARGIN_PAGES_DISPLAYED': 2,
+
+    'SHOW_FIRST_PAGE_WHEN_INVALID': True,
+}
+TIME_INPUT_FORMATS = ('%H:%M',)

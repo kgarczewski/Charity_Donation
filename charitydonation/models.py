@@ -4,7 +4,6 @@ from django.db import models
 
 # Create your models here.
 
-
 class Category(models.Model):
     name = models.CharField(max_length=250)
 
@@ -26,6 +25,10 @@ class Institution(models.Model):
     def __str__(self):
         return self.name
 
+    def get_categories(self):
+        if self.categories:
+            return '%s' % " / ".join([categories.name for categories in self.categories.all()])
+
 
 class Donation(models.Model):
     quantity = models.IntegerField()
@@ -42,3 +45,8 @@ class Donation(models.Model):
 
     def __str__(self):
         return self.pick_up_comment
+
+    def get_categories(self):
+        return ', '.join([a.name for a in self.categories.all()])
+
+

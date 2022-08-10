@@ -1,22 +1,34 @@
 {% extends 'base.html' %}
 {% load static %}{% block content %}
-    siema
-    <header class="header--main-page">
-      <nav class="container container--70">
+ <header class="header--main-page">
+       <nav class="container container--70">
         <ul class="nav--actions">
-          <li><a href="" class="btn btn--small btn--without-border">Zaloguj</a></li>
-          <li><a href="#" class="btn btn--small btn--highlighted">Załóż konto</a></li>
+          <li class="logged-user">
+            Witaj {{ request.user.first_name }}
+            <ul class="dropdown">
+              <li><a href={% url "profile" %}>Profil</a></li>
+              <li><a href="#">Ustawienia</a></li>
+                {% if request.user.is_superuser %}
+                    <li><a href="/admin">Panel administracyjny</a></li>
+                    {% endif %}
+              <li><a href={% url "logout" %}>Wyloguj</a></li>
+{#                     {% if not request.user.is_authenticated %}#}
+{#        <li><a href="{% url "login" %}" class="btn btn--small btn--without-border">Zaloguj</a></li>#}
+{#          <li><a href="{% url "register" %}" class="btn btn--small btn--highlighted">Załóż konto</a></li>#}
         </ul>
+            </li>
+      </ul>
 
-        <ul>
+      <ul>
           <li><a href="" class="btn btn--without-border active">Start</a></li>
           <li><a href="#steps" class="btn btn--without-border">O co chodzi?</a></li>
           <li><a href="#about-us" class="btn btn--without-border">O nas</a></li>
           <li><a href="#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
-          <li><a href="form.html" class="btn btn--without-border">Przekaż dary</a></li>
+          <li><a href="{% url "add_donation" %}" class="btn btn--without-border">Przekaż dary</a></li>
           <li><a href="#contact" class="btn btn--without-border">Kontakt</a></li>
-        </ul>
+            </ul>
       </nav>
+
 
       <div class="slogan container container--90">
         <div class="slogan--item">
@@ -31,13 +43,19 @@
     <section id="stats" class="stats">
       <div class="container container--85">
         <div class="stats--item">
-          <em>10</em>
+            <div id="counter">
+{#                <em><div class="content-data mt-4" data-url="{% url 'data' %}">#}
+{#                </div></em>#}
+                                <em><div class="content-data mt-4">{{ q }}</div></em>
+
+
+            </div>
           <h3>Oddanych worków</h3>
           <p>Lorem ipsum dolor sit amet consectetur adipisicing elit. Eius est beatae, quod accusamus illum tempora!</p>
         </div>
 
         <div class="stats--item">
-          <em>5</em>
+          <em>{{ i|length }}</em>
           <h3>Wspartych organizacji</h3>
           <p>Lorem ipsum dolor sit amet consectetur, adipisicing elit. Laboriosam magnam, sint nihil cupiditate quas quam.</p>
         </div>
@@ -71,7 +89,7 @@
         </div>
       </div>
 
-      <a href="#" class="btn btn--large">Załóż konto</a>
+      <a href="{% url "register" %}" class="btn btn--large">Załóż konto</a>
     </section>
 
     <section id="about-us" class="about-us">
@@ -91,134 +109,95 @@
         <li data-id="2"><a href="#" class="btn btn--without-border">Organizacjom pozarządowym</a></li>
         <li data-id="3"><a href="#" class="btn btn--without-border">Lokalnym zbiórkom</a></li>
       </ul>
-
       <!-- SLIDE 1 -->
-      <div class="help--slides active" data-id="1">
-        <p>W naszej bazie znajdziesz listę zweryfikowanych Fundacji, z którymi współpracujemy. Możesz sprawdzić czym się zajmują, komu pomagają i czego potrzebują.</p>
 
+      <div id="institution" class="help--slides active" data-id="1">
+        <p>W naszej bazie znajdziesz listę zweryfikowanych Fundacji, z którymi współpracujemy. Możesz sprawdzić czym się zajmują, komu pomagają i czego potrzebują.</p>
+ {% for i in institutions %}
         <ul class="help--slides-items">
           <li>
             <div class="col">
-              <div class="title">Fundacja "Dbam o Zdrowie"</div>
-              <div class="subtitle">Cel i misja: Pomoc dzieciom z ubogich rodzin.</div>
+              <div class="title">{{ i.name }}</div>
+              <div class="subtitle">Cel i misja: {{ i.description  }}</div>
             </div>
-
-            <div class="col"><div class="text">ubrania, jedzenie, sprzęt AGD, meble, zabawki</div></div>
+            <div class="col"><div class="text">{% for cat in i.categories.all %} {{ cat }} {% endfor %}</div></div>
           </li>
+     </ul>
+                      {% endfor %}
+       <nav id="pagination">
+        {%  for i in institutions.paginator.page_range %}
+            {% if institutions.number == i %}
+       <ul class="help--slides-pagination">
+            <li class="btn btn--small btn--without-border active"><a class="page-link" href="{{ request.path }}?page={{ i }}" >{{ i }}</a></li>
+            {% else %}
+            <li class="btn btn--small btn--without-border"><a class="page-link" href="{{ request.path }}?page={{ i }}">{{ i }}</a></li>
+    </ul>
+          {% endif %}
+  {% endfor %}
+    </nav>
+           </div>
 
-          <li>
-            <div class="col">
-              <div class="title">Fundacja “Dla dzieci"</div>
-              <div class="subtitle">Cel i misja: Pomoc osobom znajdującym się w trudnej sytuacji życiowej.</div>
-            </div>
-
-            <div class="col"><div class="text">ubrania, meble, zabawki</div></div>
-          </li>
-
-          <li>
-            <div class="col">
-              <div class="title">Fundacja “Bez domu”</div>
-              <div class="subtitle">Cel i misja: Pomoc dla osób nie posiadających miejsca zamieszkania</div>
-            </div>
-
-            <div class="col"><div class="text">ubrania, jedzenie, ciepłe koce</div></div>
-          </li>
-        </ul>
-        <!-- Pagination
-        <ul class="help--slides-pagination">
-          <li><a href="#" class="btn btn--small btn--without-border active" data-page="1">1</a></li>
-          <li><a href="#" class="btn btn--small btn--without-border" data-page="2">2</a></li>
-          <li><a href="#" class="btn btn--small btn--without-border" data-page="3">3</a></li>
-        </ul>
-        -->
-      </div>
-
-
-      <!-- SLIDE 2 -->
-      <div class="help--slides" data-id="2">
+         <!-- SLIDE 2 -->
+      <div id="institution2" class="help--slides" data-id="2">
         <p>
           Lorem ipsum dolor, sit amet consectetur adipisicing elit. Hic officiis mollitia dolor, neque aspernatur accusamus debitis. Ducimus, officia. Quia, sunt illum! Non iste placeat ab ipsum alias
           quos suscipit corporis!
         </p>
+    {% for i in institutions2 %}
         <ul class="help--slides-items">
           <li>
             <div class="col">
-              <div class="title">Organizacja 1</div>
-              <div class="subtitle">Lorem ipsum dolor sit amet consectetur.</div>
+              <div class="title">{{ i.name }}</div>
+              <div class="subtitle">Cel i misja: {{ i.description  }}</div>
             </div>
-
-            <div class="col"><div class="text">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div></div>
+            <div class="col"><div class="text">{% for cat in i.categories.all %} {{ cat }} {% endfor %}</div></div>
           </li>
+     </ul>
+      {% endfor %}
 
-          <li>
-            <div class="col">
-              <div class="title">Organizacja 2</div>
-              <div class="subtitle">Lorem ipsum dolor sit amet consectetur.</div>
-            </div>
+       <nav id="pagination2">
+        {%  for i in institutions2.paginator.page_range %}
+            {% if institutions2.number == i %}
+       <ul class="help--slides-pagination">
+            <li class="btn btn--small btn--without-border active"><a class="page-link" href="{{ request.path }}?page={{ i }}" >{{ i }}</a></li>
+            {% else %}
+            <li class="btn btn--small btn--without-border"><a class="page-link" href="{{ request.path }}?page={{ i }}">{{ i }}</a></li>
+    </ul>
+          {% endif %}
+  {% endfor %}
+       </nav>
+           </div>
 
-            <div class="col"><div class="text">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div></div>
-          </li>
-
-          <li>
-            <div class="col">
-              <div class="title">Organizacja 3</div>
-              <div class="subtitle">Lorem ipsum dolor sit amet consectetur.</div>
-            </div>
-
-            <div class="col"><div class="text">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div></div>
-          </li>
-
-          <li>
-            <div class="col">
-              <div class="title">Organizacja 4</div>
-              <div class="subtitle">Lorem ipsum dolor sit amet consectetur.</div>
-            </div>
-
-            <div class="col"><div class="text">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div></div>
-          </li>
-        </ul>
-
-        <!-- Pagination
-        <ul class="help--slides-pagination">
-          <li><a href="#" class="btn btn--small btn--without-border active" data-page="1">1</a></li>
-          <li><a href="#" class="btn btn--small btn--without-border" data-page="2">2</a></li>
-          <li><a href="#" class="btn btn--small btn--without-border" data-page="3">3</a></li>
-          <li><a href="#" class="btn btn--small btn--without-border" data-page="4">4</a></li>
-          <li><a href="#" class="btn btn--small btn--without-border" data-page="5">5</a></li>
-        </ul>
-        -->
-      </div>
 
       <!-- SLIDE 3 -->
-      <div class="help--slides" data-id="3">
-        <p>Lorem ipsum dolor sit amet, his ocurreret persequeris ea, ad utinam laudem duo. Verterem adipisci partiendo eos ne, ea his reque quaeque recteque, ne quo lobortis intellegam.</p>
+      <div id="institution3" class="help--slides" data-id="3">
+          <p>Lorem ipsum dolor sit amet, his ocurreret persequeris ea, ad utinam laudem duo. Verterem adipisci partiendo eos ne, ea his reque quaeque recteque, ne quo lobortis intellegam.</p>
+ {% for i in institutions3 %}
         <ul class="help--slides-items">
           <li>
             <div class="col">
-              <div class="title">Lokalna zbiórka 1</div>
-              <div class="subtitle">Lorem ipsum dolor sit amet consectetur.</div>
+              <div class="title">{{ i.name }}</div>
+              <div class="subtitle">Cel i misja: {{ i.description  }}</div>
             </div>
-
-            <div class="col"><div class="text">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div></div>
+            <div class="col"><div class="text">{% for cat in i.categories.all %} {{ cat }} {% endfor %}</div></div>
           </li>
+     </ul>
+                      {% endfor %}
 
-          <li>
-            <div class="col">
-              <div class="title">Lokalna zbiórka 2</div>
-              <div class="subtitle">Lorem ipsum dolor sit amet consectetur.</div>
-            </div>
 
-            <div class="col"><div class="text">Lorem ipsum dolor sit amet consectetur adipisicing elit.</div></div>
-          </li>
-        </ul>
+       <nav id="pagination3">
+        {%  for i in institutions3.paginator.page_range %}
+            {% if institutions3.number == i %}
+       <ul class="help--slides-pagination3">
+            <li class="btn btn--small btn--without-border active"><a class="page-link" href="{{ request.path }}?page={{ i }}" >{{ i }}</a></li>
+            {% else %}
+            <li class="btn btn--small btn--without-border"><a class="page-link" href="{{ request.path }}?page={{ i }}">{{ i }}</a></li>
+    </ul>
+          {% endif %}
+  {% endfor %}
+    </nav>
+           </div>
 
-        <!-- Pagination
-        <ul class="help--slides-pagination">
-          <li><a href="#" class="btn btn--small btn--without-border active" data-page="1">1</a></li>
-          <li><a href="#" class="btn btn--small btn--without-border" data-page="2">2</a></li>
-        </ul>
-        -->
-      </div>
     </section>
 
     <footer>
@@ -244,6 +223,111 @@
     </footer>
 
     <script src="../static/js/app.js"></script>
-  </body>
+  <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+{% block scripts %}
+    <script>
+    {#$(document).ready(function (){#}
+    {#    setInterval(function()#}
+    {#    {#}
+    {#    $.ajax({#}
+    {#        type:'GET',#}
+    {#        url: "{% url 'data' %}",#}
+    {#        success: function (response) {#}
+    {#            $(".content-data").empty();#}
+    {#            {#}
+    {#                console.log(response.don);#}
+    {#                var temp = response.don;#}
+    {#                $(".content-data").append(temp);#}
+    {#            }#}
+    {#        },#}
+    {#        error: function (response) {#}
+    {#            console.log('something went wrong');#}
+    {#        }#}
+    {#    });#}
+    {#},1000);#}
+    {#});#}
+
+function ajaxPagination(){
+    $('#pagination a.page-link').each((index, el)=>{
+        $(el).click((e) =>{
+            e.preventDefault()
+            let page_url = $(el).attr('href')
+
+            $.ajax({
+                url: page_url,
+                type: 'GET',
+                success: (data) => {
+                    $('#institution').empty()
+                    $('#institution').append($(data).find('#institution').html())
+                    $('#pagination').empty()
+                    $('#pagination').append($(data).find('#pagination').html())
+
+                }
+            })
+        } )
+    })
+}
+$(document).ready(function (){
+ajaxPagination()
+})
+$(document).ajaxStop(function (){
+ajaxPagination()
+})
+    function ajaxPagination2(){
+    $('#pagination2 a.page-link').each((index, el)=>{
+        $(el).click((e) =>{
+            e.preventDefault()
+            let page_url = $(el).attr('href')
+
+            $.ajax({
+                url: page_url,
+                type: 'GET',
+                success: (data) => {
+                    $('#institution2').empty()
+                    $('#institution2').append($(data).find('#institution2').html())
+                    $('#pagination2').empty()
+                    $('#pagination2').append($(data).find('#pagination2').html())
+
+                }
+            })
+        } )
+    })
+}
+$(document).ready(function (){
+ajaxPagination2()
+})
+$(document).ajaxStop(function (){
+ajaxPagination2()
+})
+    function ajaxPagination3(){
+    $('#pagination3 a.page-link').each((index, el)=>{
+        $(el).click((e) =>{
+            e.preventDefault()
+            let page_url = $(el).attr('href')
+
+            $.ajax({
+                url: page_url,
+                type: 'GET',
+                success: (data) => {
+                    $('#institution3').empty()
+                    $('#institution3').append($(data).find('#institution3').html())
+                    $('#pagination3').empty()
+                    $('#pagination3').append($(data).find('#pagination3').html())
+
+                }
+            })
+        } )
+    })
+}
+$(document).ready(function (){
+ajaxPagination3()
+})
+$(document).ajaxStop(function (){
+ajaxPagination3()
+})
+
+    </script>
+  {% endblock scripts %}
+
 </html>
-{% endblock %}
+  {% endblock %}

@@ -4,22 +4,25 @@
       <nav class="container container--70">
         <ul class="nav--actions">
           <li class="logged-user">
-            Witaj Agata
+            Witaj {{ request.user.first_name }}
             <ul class="dropdown">
-              <li><a href="#">Profil</a></li>
+              <li><a href={% url "profile" %}>Profil</a></li>
               <li><a href="#">Ustawienia</a></li>
-              <li><a href="#">Wyloguj</a></li>
+                {% if request.user.is_superuser %}
+                    <li><a href="/admin">Panel administracyjny</a></li>
+                    {% endif %}
+              <li><a href={% url "logout" %}>Wyloguj</a></li>
             </ul>
           </li>
         </ul>
 
         <ul>
-          <li><a href="index.html" class="btn btn--without-border active">Start</a></li>
-          <li><a href="index.html#steps" class="btn btn--without-border">O co chodzi?</a></li>
-          <li><a href="index.html#about-us" class="btn btn--without-border">O nas</a></li>
-          <li><a href="index.html#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
-          <li><a href="form.html" class="btn btn--without-border">Przekaż dary</a></li>
-          <li><a href="index.html#contact" class="btn btn--without-border">Kontakt</a></li>
+          <li><a href="{% url "landing_page" %}" class="btn btn--without-border active">Start</a></li>
+          <li><a href="/#steps" class="btn btn--without-border">O co chodzi?</a></li>
+          <li><a href="/#about-us" class="btn btn--without-border">O nas</a></li>
+          <li><a href="/#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
+          <li><a href="{% url "add_donation" %}" class="btn btn--without-border">Przekaż dary</a></li>
+          <li><a href="/#contact" class="btn btn--without-border">Kontakt</a></li>
         </ul>
       </nav>
 
@@ -74,74 +77,80 @@
       <div class="form--steps-container">
         <div class="form--steps-counter">Krok <span>1</span>/5</div>
 
-        <form action="form-confirmation.html" method="post">
+        <form action='/add_donation/' method="POST" id="form1">
+        {% csrf_token %}
           <!-- STEP 1: class .active is switching steps -->
           <div data-step="1" class="active">
             <h3>Zaznacz co chcesz oddać:</h3>
-
+  {% for c in category %}
+      {{ c.id }}
             <div class="form-group form-group--checkbox">
               <label>
-                <input
+                  <input
+                          class="checkbox_cat"
+                          data-filter="category"
                   type="checkbox"
                   name="categories"
-                  value="clothes-to-use"
+                  id="selection-button"
+                  value= {{ c.id }}
+
                 />
                 <span class="checkbox"></span>
                 <span class="description"
-                  >ubrania, które nadają się do ponownego użycia</span
+                  >{{ c.name }}</span
                 >
               </label>
             </div>
-
-            <div class="form-group form-group--checkbox">
-              <label>
-                <input
-                  type="checkbox"
-                  name="categories"
-                  value="clothes-useless"
-                />
-                <span class="checkbox"></span>
-                <span class="description">ubrania, do wyrzucenia</span>
-              </label>
-            </div>
-
-            <div class="form-group form-group--checkbox">
-              <label>
-                <input type="checkbox" name="categories" value="toys" />
-                <span class="checkbox"></span>
-                <span class="description">zabawki</span>
-              </label>
-            </div>
-
-            <div class="form-group form-group--checkbox">
-              <label>
-                <input type="checkbox" name="categories" value="books" />
-                <span class="checkbox"></span>
-                <span class="description">książki</span>
-              </label>
-            </div>
-
-            <div class="form-group form-group--checkbox">
-              <label>
-                <input type="checkbox" name="categories" value="other" />
-                <span class="checkbox"></span>
-                <span class="description">inne</span>
-              </label>
-            </div>
+                    {% endfor %}
+{##}
+{#            <div class="form-group form-group--checkbox">#}
+{#              <label>#}
+{#                <input#}
+{#                  type="checkbox"#}
+{#                  name="categories"#}
+{#                  value="clothes-useless"#}
+{#                />#}
+{#                <span class="checkbox"></span>#}
+{#                <span class="description">ubrania, do wyrzucenia</span>#}
+{#              </label>#}
+{#            </div>#}
+{##}
+{#            <div class="form-group form-group--checkbox">#}
+{#              <label>#}
+{#                <input type="checkbox" name="categories" value="toys" />#}
+{#                <span class="checkbox"></span>#}
+{#                <span class="description">zabawki</span>#}
+{#              </label>#}
+{#            </div>#}
+{##}
+{#            <div class="form-group form-group--checkbox">#}
+{#              <label>#}
+{#                <input type="checkbox" name="categories" value="books" />#}
+{#                <span class="checkbox"></span>#}
+{#                <span class="description">książki</span>#}
+{#              </label>#}
+{#            </div>#}
+{##}
+{#            <div class="form-group form-group--checkbox">#}
+{#              <label>#}
+{#                <input type="checkbox" name="categories" value="other" />#}
+{#                <span class="checkbox"></span>#}
+{#                <span class="description">inne</span>#}
+{#              </label>#}
+{#            </div>#}
 
             <div class="form-group form-group--buttons">
-              <button type="button" class="btn next-step">Dalej</button>
+              <button type="button" class="btn next-step" id="request-btn">Dalej</button>
             </div>
           </div>
 
           <!-- STEP 2 -->
           <div data-step="2">
             <h3>Podaj liczbę 60l worków, w które spakowałeś/aś rzeczy:</h3>
-
             <div class="form-group form-group--inline">
               <label>
                 Liczba 60l worków:
-                <input type="number" name="bags" step="1" min="1" />
+                <input type="number" name="bags" step="1" min="1" id="bags" />
               </label>
             </div>
 
@@ -157,32 +166,20 @@
           <div data-step="3">
             <h3>Wybierz organizacje, której chcesz pomóc:</h3>
 
-            <div class="form-group form-group--checkbox">
+            <div class="form-group form-group--checkbox" id="filteredInstitution">
+            <p class="ajaxLoader">Laoding...</p>
+                {% for i in data %}
               <label>
-                <input type="radio" name="organization" value="old" />
+                <input type="radio" name="organization" id="organization" value='essa'  class="checkbox-org" data-filter="org"/>
                 <span class="checkbox radio"></span>
                 <span class="description">
-                  <div class="title">Fundacja “Bez domu”</div>
+                  <div class="title">{{ i.name }}</div>
                   <div class="subtitle">
-                    Cel i misja: Pomoc dla osób nie posiadających miejsca
-                    zamieszkania
+                   {{ i.description }}
                   </div>
                 </span>
               </label>
-            </div>
-
-            <div class="form-group form-group--checkbox">
-              <label>
-                <input type="radio" name="organization" value="old" />
-                <span class="checkbox radio"></span>
-                <span class="description">
-                  <div class="title">Fundacja “Dla dzieci"</div>
-                  <div class="subtitle">
-                    Cel i misja: Pomoc osobom znajdującym się w trudnej sytuacji
-                    życiowej.
-                  </div>
-                </span>
-              </label>
+                {% endfor %}
             </div>
 
             <div class="form-group form-group--buttons">
@@ -199,22 +196,22 @@
               <div class="form-section--column">
                 <h4>Adres odbioru</h4>
                 <div class="form-group form-group--inline">
-                  <label> Ulica <input type="text" name="address" /> </label>
+                  <label> Ulica <input type="text" name="address" id="address" /> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
-                  <label> Miasto <input type="text" name="city" /> </label>
+                  <label> Miasto <input type="text" name="city" id="city" /> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
                   <label>
-                    Kod pocztowy <input type="text" name="postcode" />
+                    Kod pocztowy <input type="text" name="postcode" id="postcode" />
                   </label>
                 </div>
 
                 <div class="form-group form-group--inline">
                   <label>
-                    Numer telefonu <input type="phone" name="phone" />
+                    Numer telefonu <input type="phone" name="phone" id="phone" />
                   </label>
                 </div>
               </div>
@@ -222,24 +219,24 @@
               <div class="form-section--column">
                 <h4>Termin odbioru</h4>
                 <div class="form-group form-group--inline">
-                  <label> Data <input type="date" name="data" /> </label>
+                  <label> Data <input type="date" name="data" id="data" /> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
-                  <label> Godzina <input type="time" name="time" /> </label>
+                  <label> Godzina <input type="time" name="time" id="time" value="13:30" /> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
                   <label>
                     Uwagi dla kuriera
-                    <textarea name="more_info" rows="5"></textarea>
+                    <textarea name="more_info" rows="5" id="more_info"></textarea>
                   </label>
                 </div>
               </div>
             </div>
             <div class="form-group form-group--buttons">
-              <button type="button" class="btn prev-step">Wstecz</button>
-              <button type="button" class="btn next-step">Dalej</button>
+              <button type="button" class="btn prev-step" >Wstecz</button>
+              <button type="button" class="btn next-step" >Dalej</button>
             </div>
           </div>
 
@@ -248,13 +245,16 @@
             <h3>Podsumowanie Twojej darowizny</h3>
 
             <div class="summary">
-              <div class="form-section">
+              <div class="form-section" id="filteredOrg" >
                 <h4>Oddajesz:</h4>
+              <h2></h2>
                 <ul>
                   <li>
                     <span class="icon icon-bag"></span>
                     <span class="summary--text"
-                      >4 worki ubrań w dobrym stanie dla dzieci</span
+
+                      >{{ quantity }} worki {% for i in categories %}{{ i.name }}{% endfor %} w dobrym stanie dla dzieci</span
+
                     >
                   </li>
 
@@ -281,9 +281,9 @@
                 <div class="form-section--column">
                   <h4>Termin odbioru:</h4>
                   <ul>
-                    <li>13/12/2018</li>
-                    <li>15:40</li>
-                    <li>Brak uwag</li>
+                    <li>{{ pick_up_date }}</li>
+                    <li>{{ pick_up_time }}</li>
+                    <li>{{ comment }}</li>
                   </ul>
                 </div>
               </div>
@@ -291,7 +291,7 @@
 
             <div class="form-group form-group--buttons">
               <button type="button" class="btn prev-step">Wstecz</button>
-              <button type="submit" class="btn">Potwierdzam</button>
+              <button type="submit" class="btn" >Potwierdzam</button>
             </div>
           </div>
         </form>
@@ -335,6 +335,77 @@
     </footer>
 
     <script src="../static/js/app.js"></script>
-  </body>
-</html>
+      <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
+
+    {% block scripts %}
+    <script>
+
+$(document).ready(function (){
+    $('.ajaxLoader').hide();
+    $(".checkbox_cat").on('click', function (){
+        var _filterObj={};
+        $('.checkbox_cat').each(function (index, ele){
+        var _filterVal=$(this).val();
+        var _filterKey=$(this).data('filter');
+        _filterObj[_filterKey]=Array.from(document.querySelectorAll('input[data-filter='+_filterKey+']:checked')).map(function (el) {
+            return el.value;
+        })
+    });
+        //run Ajax
+        $.ajax({
+            url:'{% url 'filter-data' %}',
+            data:_filterObj,
+            dataType:'json',
+            beforeSend:function (){
+            $('.ajaxLoader').html('Loading..');
+        },
+            success:function (res){
+            console.log(res);
+            $("#filteredInstitution").html(res.data);
+            $('.ajaxLoader').hide();
+        }
+    })
+});
+    });
+
+{#$('.checkbox-org').on('change', function(){#}
+{#  var line_spacing2 = $("input[type=radio]:checked").val();#}
+{#  alert(line_spacing2); //this is OK#}
+{#});#}
+
+$('#form1').submit('submit', function (e){
+    e.preventDefault();
+    console.log("create donation is working!") // sanity check
+        $.ajax({
+            method:'POST',
+            url:{% url 'add_donation' %},
+            data:{
+                    quantity:$('#bags').val(),
+                    institution:$("input[type='radio'][name='organization']:checked").val(),
+                    categories:$("input[type='checkbox'][name='categories']:checked").val(),
+                    address:$('#address').val(),
+                    phone_number:$('#phone').val(),
+                    city:$('#city').val(),
+                    zip_code:$('#postcode').val(),
+                    pick_up_date:$('#data').val(),
+                    pick_up_time:$('#time').val(),
+                    pick_up_comment:$('#more_info').val(),
+                    csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
+        },
+
+            success : function(data) {
+                $('h2').html(data);
+                console.log(data); // log the returned json to the console
+                console.log("success"); // another sanity check
+                location.href = '/summary'
+            }
+        });
+    });
+
+
+    </script>
+
+  {% endblock scripts %}
   {% endblock %}
+</html>
+

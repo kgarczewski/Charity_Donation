@@ -1501,7 +1501,7 @@ header nav ul li:last-of-type {
 
 /* line 101, scss/modules/homepage-sections/_help.scss */
 .help--slides-pagination li {
-  margin: 0 8px;
+  margin: 20px 0;
 }
 
 /* line 1, scss/modules/_footer.scss */

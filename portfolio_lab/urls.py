@@ -20,9 +20,16 @@ from charitydonation import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', views.LandingPage.as_view(), name='landing_page'),
-    path('add_donation/', views.AddDonation.as_view(), name='add_donation'),
+    # path('', views.Pagination.as_view(), name='pagination'),
+    path('data/', views.JsonLanding.as_view(), name='data'),
+    # path('/data2', views.JsonAddDonation.as_view(), name='data2'),
+    path('add_donation/', views.donation_add_view, name='add_donation'),
+    path('summary/', views.DonationView.as_view(), name='summary'),
+    path('filter-data/', views.filter_data, name='filter-data'),
+    # path('test/', views.display_institution, name='display_pagination'),
     path('login/', views.Login.as_view(), name='login'),
-    path('register/', views.Register.as_view(), name='register')
-
+    path('logout/', views.LogoutView.as_view(), name='logout'),
+    path('register/', views.Register.as_view(), name='register'),
+    path('profile/', views.UserProfile.as_view(), name='profile'),
 
 ]
