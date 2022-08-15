@@ -3,18 +3,21 @@
  <header class="header--main-page">
        <nav class="container container--70">
         <ul class="nav--actions">
+        {% if request.user.is_authenticated %}
           <li class="logged-user">
             Witaj {{ request.user.first_name }}
             <ul class="dropdown">
               <li><a href={% url "profile" %}>Profil</a></li>
-              <li><a href="#">Ustawienia</a></li>
-                {% if request.user.is_superuser %}
+              <li><a href="{% url "update_profile" %}">Ustawienia</a></li>
+               {% if user.is_staff %}
                     <li><a href="/admin">Panel administracyjny</a></li>
                     {% endif %}
               <li><a href={% url "logout" %}>Wyloguj</a></li>
-{#                     {% if not request.user.is_authenticated %}#}
-{#        <li><a href="{% url "login" %}" class="btn btn--small btn--without-border">Zaloguj</a></li>#}
-{#          <li><a href="{% url "register" %}" class="btn btn--small btn--highlighted">Załóż konto</a></li>#}
+              {% endif %}
+                     {% if not request.user.is_authenticated %}
+        <li><a href="{% url "login" %}" class="btn btn--small btn--without-border">Zaloguj</a></li>
+          <li><a href="{% url "register" %}" class="btn btn--small btn--highlighted">Załóż konto</a></li>
+            {% endif %}
         </ul>
             </li>
       </ul>

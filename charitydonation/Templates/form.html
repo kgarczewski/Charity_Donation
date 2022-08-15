@@ -8,7 +8,7 @@
             <ul class="dropdown">
               <li><a href={% url "profile" %}>Profil</a></li>
               <li><a href="#">Ustawienia</a></li>
-                {% if request.user.is_superuser %}
+               {% if user.is_staff %}
                     <li><a href="/admin">Panel administracyjny</a></li>
                     {% endif %}
               <li><a href={% url "logout" %}>Wyloguj</a></li>
@@ -17,11 +17,11 @@
         </ul>
 
         <ul>
-          <li><a href="{% url "landing_page" %}" class="btn btn--without-border active">Start</a></li>
+          <li><a href="{% url "landing_page" %}" class="btn btn--without-border">Start</a></li>
           <li><a href="/#steps" class="btn btn--without-border">O co chodzi?</a></li>
           <li><a href="/#about-us" class="btn btn--without-border">O nas</a></li>
           <li><a href="/#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
-          <li><a href="{% url "add_donation" %}" class="btn btn--without-border">Przekaż dary</a></li>
+          <li><a href="{% url "add_donation" %}" class="btn btn--without-border active">Przekaż dary</a></li>
           <li><a href="/#contact" class="btn btn--without-border">Kontakt</a></li>
         </ul>
       </nav>
@@ -170,7 +170,7 @@
             <p class="ajaxLoader">Laoding...</p>
                 {% for i in data %}
               <label>
-                <input type="radio" name="organization" id="organization" value='essa'  class="checkbox-org" data-filter="org"/>
+                <input type="radio" name="organization" id="organization" value={{ i.name }}  class="checkbox-org" data-filter="org"/>
                 <span class="checkbox radio"></span>
                 <span class="description">
                   <div class="title">{{ i.name }}</div>
@@ -223,7 +223,7 @@
                 </div>
 
                 <div class="form-group form-group--inline">
-                  <label> Godzina <input type="time" name="time" id="time" value="13:30" /> </label>
+                  <label> Godzina <input type="time" name="time" id="time" value="00:00" /> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
@@ -236,7 +236,7 @@
             </div>
             <div class="form-group form-group--buttons">
               <button type="button" class="btn prev-step" >Wstecz</button>
-              <button type="button" class="btn next-step" >Dalej</button>
+              <button type="button" class="btn next-step" id="summary" onclick="showData()" >Dalej</button>
             </div>
           </div>
 
@@ -247,13 +247,13 @@
             <div class="summary">
               <div class="form-section" id="filteredOrg" >
                 <h4>Oddajesz:</h4>
-              <h2></h2>
+
                 <ul>
                   <li>
-                    <span class="icon icon-bag"></span>
-                    <span class="summary--text"
+                    <span class="icon icon-bag" id="bags"></span>
+                    <span class="summary--text "
 
-                      >{{ quantity }} worki {% for i in categories %}{{ i.name }}{% endfor %} w dobrym stanie dla dzieci</span
+                    > <label id="quantity"></label> worki <label id="rzeczy"></label> w dobrym stanie dla dzieci</span
 
                     >
                   </li>
@@ -261,29 +261,29 @@
                   <li>
                     <span class="icon icon-hand"></span>
                     <span class="summary--text"
-                      >Dla fundacji "Mam marzenie" w Warszawie</span
+                      >Dla fundacji <label id="institution"></label></span
                     >
                   </li>
                 </ul>
               </div>
 
               <div class="form-section form-section--columns">
-                <div class="form-section--column">
+                <div class="form-section--column1">
                   <h4>Adres odbioru:</h4>
                   <ul>
-                    <li>Prosta 51</li>
-                    <li>Warszawa</li>
-                    <li>99-098</li>
-                    <li>123 456 789</li>
+                    <li><label id="street"></label></li>
+                    <li><label id="miasto"></label></li>
+                    <li><label id="kod"></label></li>
+                    <li><label id="tel"></label></li>
                   </ul>
                 </div>
 
                 <div class="form-section--column">
                   <h4>Termin odbioru:</h4>
                   <ul>
-                    <li>{{ pick_up_date }}</li>
-                    <li>{{ pick_up_time }}</li>
-                    <li>{{ comment }}</li>
+                    <li><label id="date"></label></li>
+                    <li><label id="czas"></label></li>
+
                   </ul>
                 </div>
               </div>
@@ -300,7 +300,7 @@
 
     <footer>
       <div class="contact">
-        <h2>Skontaktuj się z nami</h2>
+        <h2>Skontaktuj się z nami {{ categories }}</h2>
         <h3>Formularz kontaktowy</h3>
         <form class="form--contact">
           <div class="form-group form-group--50">
@@ -365,7 +365,21 @@ $(document).ready(function (){
             $('.ajaxLoader').hide();
         }
     })
-});
+        $.ajax({
+            url:'{% url 'add_donation' %}',
+            data:_filterObj,
+            dataType:'json',
+            beforeSend:function (){
+            $('.ajaxLoader').html('Loading..');
+        },
+            success:function (res){
+            console.log(res);
+            $("#filteredInstitution").html(res.data);
+            $('.ajaxLoader').hide();
+        }
+    })
+    });
+
     });
 
 {#$('.checkbox-org').on('change', function(){#}
@@ -375,14 +389,23 @@ $(document).ready(function (){
 
 $('#form1').submit('submit', function (e){
     e.preventDefault();
+    $('#request-btn').ready(function (){
+    var id = [];
+    $(':checkbox:checked').each(function(i){
+            id[i]=$(this).val()
+        console.log(id)
+    })
+
+
     console.log("create donation is working!") // sanity check
         $.ajax({
             method:'POST',
             url:{% url 'add_donation' %},
+            traditional: true,
             data:{
                     quantity:$('#bags').val(),
                     institution:$("input[type='radio'][name='organization']:checked").val(),
-                    categories:$("input[type='checkbox'][name='categories']:checked").val(),
+                    categories: id,
                     address:$('#address').val(),
                     phone_number:$('#phone').val(),
                     city:$('#city').val(),
@@ -391,18 +414,47 @@ $('#form1').submit('submit', function (e){
                     pick_up_time:$('#time').val(),
                     pick_up_comment:$('#more_info').val(),
                     csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
-        },
 
+        },
             success : function(data) {
                 $('h2').html(data);
                 console.log(data); // log the returned json to the console
                 console.log("success"); // another sanity check
                 location.href = '/summary'
             }
-        });
+        })
+})
     });
+function showData(){
+    var quantity = $('#bags').val();
+    $('#quantity').html(quantity);
+
+    var institution = $("input[type='radio'][name='organization']:checked").val();
+    $('#institution').html(institution);
+
+    var address = $('#address').val();
+    $('#street').html(address);
+
+    var city = $('#city').val();
+    $('#miasto').html(city);
+
+    var kod = $('#postcode').val();
+    $('#kod').html(kod);
+
+    var tel = $('#phone').val();
+    $('#tel').html(tel);
+
+    var date = $('#data').val();
+    $('#date').html(date);
+
+    var time = $('#time').val();
+    $('#czas').html(time);
+
+    var rzeczy = $("input[type='checkbox'][name='categories']:checked").val()
+    $('#rzeczy').html(rzeczy);
 
 
+}
     </script>
 
   {% endblock scripts %}

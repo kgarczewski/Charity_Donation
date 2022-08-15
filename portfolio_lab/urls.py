@@ -29,7 +29,11 @@ urlpatterns = [
     # path('test/', views.display_institution, name='display_pagination'),
     path('login/', views.Login.as_view(), name='login'),
     path('logout/', views.LogoutView.as_view(), name='logout'),
-    path('register/', views.Register.as_view(), name='register'),
+    path('register/', views.Register, name='register'),
     path('profile/', views.UserProfile.as_view(), name='profile'),
+    path('update_profile/', views.update_profile, name='update_profile'),
+    path('password/', views.change_password, name='password'),
+    path('donations/', views.UserDonation.as_view(), name='donation'),
+
 
 ]

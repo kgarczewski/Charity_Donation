@@ -7,8 +7,8 @@
             Witaj {{ request.user.first_name }}
             <ul class="dropdown">
               <li><a href="{% url "profile" %}">Profil</a></li>
-              <li><a href="#">Moje zbiórki</a></li>
-              <li><a href="#">Wyloguj</a></li>
+              <li><a href="{% url "donation" %}">Moje zbiórki</a></li>
+              <li><a href="{% url "logout" %}">Wyloguj</a></li>
             </ul>
           </li>
         </ul>
@@ -25,7 +25,7 @@
       <div class="slogan container container--90">
           <h2>
             Dziękujemy za przesłanie formularza Na maila prześlemy wszelkie
-            informacje o odbiorze.
+            informacje o odbiorze. {{ quantity }}
           </h2>
       </div>
     </header>

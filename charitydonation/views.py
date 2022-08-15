@@ -1,5 +1,6 @@
 import json
 import jsonpickle
+from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
@@ -7,12 +8,12 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Count
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
 from django.views import View
-from django.views.generic import ListView
-from django.contrib.auth.forms import UserCreationForm
+from django.views.generic import ListView, UpdateView, CreateView
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
 from charitydonation.models import Donation, Institution, Category
-from charitydonation.forms import SignUpForm
+from charitydonation.forms import SignUpForm, UpdateUserForm
 from django.contrib import messages
 from django.core import serializers
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -23,6 +24,11 @@ from django.template.loader import render_to_string
 
 
 class LandingPage(View):
+
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        context["is_super"] = self.request.user.is_superuser
+        return context
     def get(self, request):
 
         institutions = Institution.objects.filter(type=1).order_by('-id').distinct().values()
@@ -52,7 +58,8 @@ class LandingPage(View):
             institutions3 = paginator3.page(paginator3.num_pages)
 
         return render(request, "index.html",
-                      {'donation': donation, 'i': i, 'q': q, 'institutions': institutions, 'institutions2':institutions2, 'institutions3':institutions3})
+                      {'donation': donation, 'i': i, 'q': q, 'institutions': institutions, 'institutions2':institutions2, 'institutions3':institutions3,
+                       })
 
 
 class JsonLanding(View):
@@ -75,26 +82,14 @@ class UserProfile(View):
         donations = Donation.objects.filter(user=request.user)
         return render(request, 'user-profile.html', {'donations': donations})
 
-# # class AddDonation(View):
-#     def get(self, request):
-#         category = Category.objects.all()
-#         query = request.POST.get("categories")
-#         qs = Institution.objects.all()
-#         return render(request, 'form.html', {'category': category, 'queryset': qs})
-# #
-# #     def post(self, request):
-# #         if request.POST.get('action') == 'create-post':
-# #             bags = request.POST.get('bags')
-# #             organization = request.POST.get('organization')
-# #             print(organization)
-# #
-# #             Donation.objects.create(
-# #                 quantity=bags,
-# #                 institution=organization
-# #                     )
-# #         return HttpResponse('udalo sie')
+
+class UserDonation(View):
+    def get(self, request):
+        donations = Donation.objects.filter(user=request.user).order_by('-pick_up_date').reverse()
+        return render(request, 'my-donations.html', {'donations': donations})
 
 
+@login_required(login_url='/login')
 def donation_add_view(request):
     if request.method == 'POST':
         quantity = request.POST['quantity']
@@ -121,42 +116,30 @@ def donation_add_view(request):
             pick_up_comment=pick_up_comment,
         )
         new_donation.save()
-        new_donation.categories.add(request.POST['categories'])
         new_donation.user = request.user
+        for i in request.POST.getlist('categories'):
+            new_donation.categories.add(i)
 
         return HttpResponse(
             json.dumps(json.loads(jsonpickle.encode(new_donation))),
             content_type="application/json"
         )
-    quantity = request.POST.get('bags')
+    categories = request.GET.getlist('category[]')
+    print(categories)
+    quantity = request.GET.getlist('bags[]')
     print(quantity)
     category = Category.objects.all()
-    query = request.POST.get("categories")
     qs = Institution.objects.all()
     pick_up_date = request.GET.getlist('pick_up_date[]')
     pick_up_comment = request.GET.get('pick_up_comment', 'es')
 
     return render(request, 'form.html', {'category': category, 'queryset': qs, 'pick_up_date': pick_up_date,
-                                         'quantity': quantity, 'comment': pick_up_comment})
-
-
-# class JsonAddDonation(View):
-#     def get(self, request, *args, **kwargs):
-#         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
-#             filter = self.request.GET.get("categories")
-#             print(self.request.GET.get("filter_category"))
-#             queryset = Institution.objects.all()
-#             print(queryset)
-#             queryset_filtered = queryset.filter()
-#             return JsonResponse({'queryset':queryset})
-#         return JsonResponse({'message': "Wrong validation"})
+                                         'quantity': quantity, 'comment': pick_up_comment, 'categories': categories})
 
 
 def filter_data(request):
     categories = request.GET.getlist('category[]')
-    print(categories)
     pick_up_date = request.GET.getlist('pick_up_date[]')
-    print(pick_up_date)
     institutions = Institution.objects.all().order_by('-id').distinct()
     if len(categories)>0:
         institutions = Institution.objects.annotate(count=Count('categories')).filter(count=len(categories))
@@ -167,21 +150,10 @@ def filter_data(request):
     return JsonResponse({'data': t})
 
 
-# def summary(request):
-#     inst = request.GET.getlist('org[]')
-#     print(inst)
-#     t = render_to_string('summary.html', {'data': inst})
-#     return JsonResponse({'data': t})
-#
 
-
-class Register(View):
-
-    def get(self, request):
-        form = SignUpForm(request.POST)
-        return render(request, 'register.html', {'form':form})
-
-    def post(self, request):
+def Register(request):
+    context = {}
+    if request.POST:
         form = SignUpForm(request.POST)
         if form.is_valid():
             first_name = form.cleaned_data.get('first_name')
@@ -193,7 +165,12 @@ class Register(View):
             if new_user is not None:
                 login(request, new_user)
                 return redirect('login')
-        return render(request, 'register.html')
+        else:
+            context['form'] = form
+    else:
+        form = SignUpForm()
+        context['form'] = form
+    return render(request, 'register.html', context)
 
 
 class Login(View):
@@ -210,6 +187,7 @@ class Login(View):
         if not User.objects.filter(username=username).exists():
             messages.error(request, 'Haslo albo nazwa uzytkownika jest nieprawidlowe')
             return render(request, 'register.html', )
+        return render(request, 'login.html')
 
 
 class LogoutView(LoginRequiredMixin, View):
@@ -218,5 +196,56 @@ class LogoutView(LoginRequiredMixin, View):
         return redirect('landing_page')
 
 
+# class UpdateProfile(LoginRequiredMixin, UserCreationForm):
+#     model = User
+#     template_name = 'update_profile.html'
+#     fields = ['username', 'first_name', 'last_name']
+#     success_url = '/profile'
 
+def update_profile(request):
+
+    if request.method == "POST":
+        user_form = UpdateUserForm(request.POST, instance=request.user)
+        if user_form.is_valid():
+            user_form.save()
+            messages.success(request, 'Profil zostal zakutalizowany')
+            return redirect('profile')
+    else:
+        user_form = UpdateUserForm(instance=request.user)
+    return render(request, 'update_profile.html', {'form':user_form})
+
+
+# class ChangePassword(LoginRequiredMixin, View):
+#     def post(self, request):
+#         form = PasswordChangeForm(request.user, request.POST)
+#         if form.is_valid():
+#             user = form.save()
+#             update_session_auth_hash(request, user)  # Important!
+#             messages.success(request, 'Your password was successfully updated!')
+#             return redirect('profile')
+#         else:
+#             messages.error(request, 'Please correct the error below.')
+#             return redirect('password')
+#
+#     def get(self, request):
+#         form = PasswordChangeForm(request.user)
+#         return render(request, 'change_password.html', {
+#                             'form': form
+#                  })
+def change_password(request):
+
+    context = {}
+    if request.POST:
+        form = PasswordChangeForm(request.user, request.POST)
+        if form.is_valid():
+            user = form.save()
+            update_session_auth_hash(request, user)  # Important!
+            messages.success(request, 'Your password was successfully updated!')
+            return redirect('profile')
+        else:
+            context['form'] = form
+    else:
+        form = PasswordChangeForm(request.user)
+        context['form'] = form
+    return render(request, 'change_password.html', context)
 

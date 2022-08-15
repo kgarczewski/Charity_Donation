@@ -11,7 +11,7 @@
             Witaj {{ request.user.first_name }}
             <ul class="dropdown">
               <li><a href="/">Profil</a></li>
-              <li><a href="#">Ustawienia</a></li>
+              <li><a href="{% url "update_profile" %}">Ustawienia</a></li>
                  {% if request.user.is_superuser %}
                     <li><a href="/admin">Panel administracyjny</a></li>
                     {% endif %}
@@ -31,29 +31,23 @@
 
     <section class="login-page">
       <h2>Załóż konto</h2>
+
       <form method="POST">
     {% csrf_token %}
-
+{% for field in form %}
         <div class="form-group">
-          <input type="text" name="first_name" placeholder="Imię" />
+          <input type="{{ field.widget_type }}" name="{{ field.name }}" placeholder="{{ field.name }}" >
         </div>
-         <div class="form-group">
-          <input type="text" name="last_name" placeholder="Nazwisko" />
-        </div>
-        <div class="form-group">
-          <input type="email" name="username" placeholder="Email" />
-        </div>
-        <div class="form-group">
-          <input type="password" name="password1" placeholder="Hasło" />
-        </div>
-        <div class="form-group">
-          <input type="password" name="password2" placeholder="Powtórz hasło" />
-        </div>
+        {% for error in field.errors %}
+            <p>{{ error }}</p>
+    {% endfor %}
+      {% endfor %}
 
         <div class="form-group form-group--buttons">
           <a href="{% url "login" %}" class="btn btn--without-border">Zaloguj się</a>
           <button class="btn" type="submit">Załóż konto</button>
         </div>
+
       </form>
     </section>
 
