@@ -30,6 +30,7 @@ class LandingPage(View):
         context = super().get_context_data(**kwargs)
         context["is_super"] = self.request.user.is_superuser
         return context
+
     def get(self, request):
 
         institutions = Institution.objects.filter(type=1).order_by('-id').distinct().values()
@@ -59,7 +60,8 @@ class LandingPage(View):
             institutions3 = paginator3.page(paginator3.num_pages)
 
         return render(request, "index.html",
-                      {'donation': donation, 'i': i, 'q': q, 'institutions': institutions, 'institutions2':institutions2, 'institutions3':institutions3,
+                      {'donation': donation, 'i': i, 'q': q, 'institutions': institutions,
+                       'institutions2': institutions2, 'institutions3': institutions3,
                        })
 
 
@@ -68,7 +70,7 @@ class JsonLanding(View):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             donation = Donation.objects.all()
             don = sum(donation.values_list('quantity', flat=True))
-            return JsonResponse({'don':don})
+            return JsonResponse({'don': don})
             pass
         return JsonResponse({'message': "Wrong validation"})
 
@@ -87,20 +89,19 @@ class UserProfile(View):
 class UserDonation(View):
     def get(self, request):
         today = datetime.date.today()
-        donations = Donation.objects.filter(user=request.user).order_by('-pick_up_date')
-        return render(request, 'my-donations.html', {'donations': donations, 'today':today})
+        donations = Donation.objects.filter(user=request.user).order_by('-is_taken', '-pick_up_date').reverse()
+        return render(request, 'my-donations.html', {'donations': donations, 'today': today})
     def post(self, request):
-        is_t = request.POST.get('is_t')
-        print(is_t)
-        donations = Donation.objects.filter(user=request.user).order_by('-pick_up_date')
-        if is_t == "on":
-            donations.is_taken = True
-        else:
-            donations.is_taken = False
+        today = datetime.date.today()
+        is_taken = request.POST.get('is_taken')
+        print(is_taken)
+        donations = Donation.objects.filter(user=request.user).order_by('-is_taken',  '-pick_up_date').reverse()
+        id_list = request.POST.getlist('ids')
+        donations.update(is_taken=False)
+        for i in id_list:
+            Donation.objects.filter(pk=int(i)).update(is_taken=True)
 
-
-        return render(request, 'my-donations.html', {'donations': donations})
-
+        return render(request, 'my-donations.html', {'donations': donations, 'today': today})
 
 
 @login_required(login_url='/login')
@@ -164,8 +165,7 @@ def filter_data(request):
     return JsonResponse({'data': t})
 
 
-
-def Register(request):
+def register(request):
     context = {}
     if request.POST:
         form = SignUpForm(request.POST)
@@ -177,6 +177,7 @@ def Register(request):
             form.save()
             new_user = authenticate(username=username, password=password)
             if new_user is not None:
+                messages.error(request, 'Rejestracja przebiegła pomyślnie. Możesz zalogować się na swoje konto')
                 login(request, new_user)
                 return redirect('login')
         else:
@@ -199,8 +200,9 @@ class Login(View):
             login(request, user)
             return redirect('landing_page')
         if not User.objects.filter(username=username).exists():
-            messages.error(request, 'Haslo albo nazwa uzytkownika jest nieprawidlowe')
+            messages.error(request, 'Uzytkownik o takiej nazwie nie istnieje. Zarejestruj sie.')
             return redirect('register')
+        messages.error(request, 'Podane haslo jest niepoprawne.')
         return render(request, 'login.html')
 
 
@@ -209,12 +211,6 @@ class LogoutView(LoginRequiredMixin, View):
         logout(request)
         return redirect('landing_page')
 
-
-# class UpdateProfile(LoginRequiredMixin, UserCreationForm):
-#     model = User
-#     template_name = 'update_profile.html'
-#     fields = ['username', 'first_name', 'last_name']
-#     success_url = '/profile'
 
 def update_profile(request):
 
@@ -226,26 +222,9 @@ def update_profile(request):
             return redirect('profile')
     else:
         user_form = UpdateUserForm(instance=request.user)
-    return render(request, 'update_profile.html', {'form':user_form})
+    return render(request, 'update_profile.html', {'form': user_form})
 
 
-# class ChangePassword(LoginRequiredMixin, View):
-#     def post(self, request):
-#         form = PasswordChangeForm(request.user, request.POST)
-#         if form.is_valid():
-#             user = form.save()
-#             update_session_auth_hash(request, user)  # Important!
-#             messages.success(request, 'Your password was successfully updated!')
-#             return redirect('profile')
-#         else:
-#             messages.error(request, 'Please correct the error below.')
-#             return redirect('password')
-#
-#     def get(self, request):
-#         form = PasswordChangeForm(request.user)
-#         return render(request, 'change_password.html', {
-#                             'form': form
-#                  })
 def change_password(request):
 
     context = {}

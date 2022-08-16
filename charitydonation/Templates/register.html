@@ -31,17 +31,22 @@
 
     <section class="login-page">
       <h2>Załóż konto</h2>
+     {% for message in messages %}
+      <p>{{ message }}. </p>
+      {% endfor %}
 
       <form method="POST">
     {% csrf_token %}
 {% for field in form %}
         <div class="form-group">
-          <input type="{{ field.widget_type }}" name="{{ field.name }}" placeholder="{{ field.name }}" >
+          <input type="{{ field.widget_type }}" name="{{ field.name }}" placeholder="{{ field.label }}" >
         </div>
         {% for error in field.errors %}
             <p>{{ error }}</p>
     {% endfor %}
       {% endfor %}
+
+
 
         <div class="form-group form-group--buttons">
           <a href="{% url "login" %}" class="btn btn--without-border">Zaloguj się</a>

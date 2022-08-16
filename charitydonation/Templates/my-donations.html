@@ -28,32 +28,44 @@
      {% if donations %}
     <h2>Moje donacje</h2>
 
+<form method="post">
+         {% csrf_token %}
 <h1 class="table"></h1>
 <table style="border:1px solid black;margin-left:auto;margin-right:auto;">>
             <tr>
         <th>INSTYTUCJA</th>
             <th>DARY</th>
                     <th>ILOSC</th>
-                    <th>DATA ODBIORU</th>
+                    <th>TERMIN ODBIORU</th>
+                <th>STATUS</th>
+                <th>KIEDY ODEBRANO</th>
+
             </tr>
+
 {% for i in donations %}
         <tr>
         <td>{{ i.institution }}</td>
         <td>{{ i.get_categories }}</td>
         <td>{{ i.quantity }}</td>
-            {% if i.pick_up_date < today %}
+            {% if i.is_taken %}
         <td>{{ i.pick_up_date }}{{ i.pick_up_time }}</td>
-                <td>odebrane</td>
-            {% else %}
+                <td>zabrany<input type="checkbox" checked="checked" name="ids" value={{ i.id }}></td>
+                <td>{{ today }}</td>
+            {% elif not i.is_taken %}
         <td>{{ i.pick_up_date }}{{ i.pick_up_time }}</td>
-                <td>oczekujace</td>
+                <td>niezabrany <input type="checkbox" name="ids" value={{ i.id }}></td>
+                <td></td>
         {% endif %}
+
         </tr>
-
-
             {% endfor %}
-
+        <td> <button type="submit" class="btn" >Aktualizuj status</button></td>
             </table>
+
+
+
+</form>
+
 {% elif not donations%}
      <h2>W ostatnim czasie nie wsparles zadnej organizacji.</h2>
      {% endif %}

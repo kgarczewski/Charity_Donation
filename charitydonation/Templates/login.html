@@ -32,6 +32,9 @@
       <h2>Zaloguj się</h2>
       <form method="POST">
               {% csrf_token %}
+          {% for message in messages %}
+      <p>{{ message }}</p>
+      {% endfor %}
         <div class="form-group">
           <input type="email" name="username" placeholder="Email" />
         </div>

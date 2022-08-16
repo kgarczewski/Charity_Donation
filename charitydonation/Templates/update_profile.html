@@ -26,13 +26,8 @@
 
  <form  method="post" >
                        {% csrf_token %}
-       <input type="password" name="password" placeholder="wprowadz haslo" />
-{#     {% for field in form %}#}
-{#          <input type="{{ field.widget_type }}" {{ field.label }}{{ field }}>#}
-{#     {% endfor %}#}
-{#  {% for error in form.errors %}#}
-{#            <p>{{ error }}</p>#}
-{#    {% endfor %}#}
+
+
 {{ form.as_p }}
      <button type="submit" class="waves-effect waves light btn-large">Zaktualizuj profil</button>
  </form>

@@ -21,9 +21,13 @@
           <li><a href="/#contact" class="btn btn--without-border">Kontakt</a></li>
         </ul>
       </nav>
-                <center> <h1>{{ request.user.first_name }}</h1>
-                         <h1>{{ request.user.last_name }}</h1>
-                        <h1>{{ request.user.username }}</h1></center>
+                    {% if request.user.first_name %}
+                <center> imie:<h1>{{ request.user.first_name }}</h1>
+                {% endif %}
+                    {% if request.user.last_name %}
+                         nazwisko:<h1>{{ request.user.last_name }}</h1>
+                    {% endif %}
+                       <center> adres email:<h1>{{ request.user.username }}</h1></center>
 
 
 
