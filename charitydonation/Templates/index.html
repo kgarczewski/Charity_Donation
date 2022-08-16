@@ -47,9 +47,9 @@
       <div class="container container--85">
         <div class="stats--item">
             <div id="counter">
-{#                <em><div class="content-data mt-4" data-url="{% url 'data' %}">#}
-{#                </div></em>#}
-                                <em><div class="content-data mt-4">{{ q }}</div></em>
+                <em><div class="content-data mt-4" data-url="{% url 'data' %}">
+                </div></em>
+{#                                <em><div class="content-data mt-4">{{ q }}</div></em>#}
 
 
             </div>
@@ -229,26 +229,26 @@
   <script src="//ajax.googleapis.com/ajax/libs/jquery/1.9.1/jquery.min.js"></script>
 {% block scripts %}
     <script>
-    {#$(document).ready(function (){#}
-    {#    setInterval(function()#}
-    {#    {#}
-    {#    $.ajax({#}
-    {#        type:'GET',#}
-    {#        url: "{% url 'data' %}",#}
-    {#        success: function (response) {#}
-    {#            $(".content-data").empty();#}
-    {#            {#}
-    {#                console.log(response.don);#}
-    {#                var temp = response.don;#}
-    {#                $(".content-data").append(temp);#}
-    {#            }#}
-    {#        },#}
-    {#        error: function (response) {#}
-    {#            console.log('something went wrong');#}
-    {#        }#}
-    {#    });#}
-    {#},1000);#}
-    {#});#}
+    $(document).ready(function (){
+        setInterval(function()
+        {
+        $.ajax({
+            type:'GET',
+            url: "{% url 'data' %}",
+            success: function (response) {
+                $(".content-data").empty();
+                {
+                    console.log(response.don);
+                    var temp = response.don;
+                    $(".content-data").append(temp);
+                }
+            },
+            error: function (response) {
+                console.log('something went wrong');
+            }
+        });
+    },1000);
+    });
 
 function ajaxPagination(){
     $('#pagination a.page-link').each((index, el)=>{

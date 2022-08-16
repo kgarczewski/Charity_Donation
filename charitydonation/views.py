@@ -18,6 +18,7 @@ from django.contrib import messages
 from django.core import serializers
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.loader import render_to_string
+import datetime
 
 
 # Create your views here.
@@ -85,8 +86,21 @@ class UserProfile(View):
 
 class UserDonation(View):
     def get(self, request):
-        donations = Donation.objects.filter(user=request.user).order_by('-pick_up_date').reverse()
+        today = datetime.date.today()
+        donations = Donation.objects.filter(user=request.user).order_by('-pick_up_date')
+        return render(request, 'my-donations.html', {'donations': donations, 'today':today})
+    def post(self, request):
+        is_t = request.POST.get('is_t')
+        print(is_t)
+        donations = Donation.objects.filter(user=request.user).order_by('-pick_up_date')
+        if is_t == "on":
+            donations.is_taken = True
+        else:
+            donations.is_taken = False
+
+
         return render(request, 'my-donations.html', {'donations': donations})
+
 
 
 @login_required(login_url='/login')
@@ -186,7 +200,7 @@ class Login(View):
             return redirect('landing_page')
         if not User.objects.filter(username=username).exists():
             messages.error(request, 'Haslo albo nazwa uzytkownika jest nieprawidlowe')
-            return render(request, 'register.html', )
+            return redirect('register')
         return render(request, 'login.html')
 
 

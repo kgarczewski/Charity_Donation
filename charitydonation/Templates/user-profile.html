@@ -1,0 +1,31 @@
+{% extends 'base.html' %}
+{% load static %}{% block content %}
+   <header class="header--form-page">
+      <nav class="container container--70">
+        <ul class="nav--actions">
+          <li class="logged-user">
+            Witaj {{ request.user.first_name }}
+            <ul class="dropdown">
+              <li><a href="{% url "update_profile" %}">Ustawienia</a></li>
+              <li><a href="{% url "donation" %}">Moje zbiórki</a></li>
+              <li><a href="{% url "logout" %}">Wyloguj</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <ul>
+          <li><a href="/" class="btn btn--without-border">Start</a></li>
+          <li><a href="/#steps" class="btn btn--without-border">O co chodzi?</a></li>
+          <li><a href="/#about-us" class="btn btn--without-border">O nas</a></li>
+          <li><a href="/#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
+          <li><a href="/#contact" class="btn btn--without-border">Kontakt</a></li>
+        </ul>
+      </nav>
+                <center> <h1>{{ request.user.first_name }}</h1>
+                         <h1>{{ request.user.last_name }}</h1>
+                        <h1>{{ request.user.username }}</h1></center>
+
+
+
+    </header>
+{% endblock %}

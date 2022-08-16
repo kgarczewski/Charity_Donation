@@ -1,0 +1,22 @@
+   <div class="summary">
+              <div class="form-section" id="filteredOrg" >
+                <h4>Oddajesz:</h4>
+                <ul>
+                  <li>
+                    <span class="icon icon-bag"></span>
+                    <span class="summary--text"
+                      >4 worki ubrań w dobrym stanie dla dzieci</span
+                    >
+                  </li>
+                            <p class="ajaxLoader">Laoding...</p>
+                      {% for i in data %}
+                  <li>
+                    <span class="icon icon-hand"></span>
+                    <span class="summary--text"
+                      >Dla fundacji {{ i.name }} w Warszawie</span
+                    >
+                  </li>
+                    {% endfor %}
+                </ul>
+              </div>
+</div>

@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}{% block content %}
+<header class="header--form-page">
+      <nav class="container container--70">
+        <ul class="nav--actions">
+          <li class="logged-user">
+            Witaj {{ request.user.first_name }}
+            <ul class="dropdown">
+              <li><a href="/profile">Profil</a></li>
+              <li><a href="{% url "donation" %}">Moje zbiórki</a></li>
+              <li><a href="{% url "logout" %}">Wyloguj</a></li>
+            </ul>
+          </li>
+        </ul>
+
+        <ul>
+          <li><a href="/" class="btn btn--without-border">Start</a></li>
+          <li><a href="/#steps" class="btn btn--without-border">O co chodzi?</a></li>
+          <li><a href="/#about-us" class="btn btn--without-border">O nas</a></li>
+          <li><a href="/#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
+          <li><a href="/#contact" class="btn btn--without-border">Kontakt</a></li>
+        </ul>
+      </nav>
+
+   <section class="login-page">
+
+ <form  method="post" >
+                       {% csrf_token %}
+       <input type="password" name="password" placeholder="wprowadz haslo" />
+{#     {% for field in form %}#}
+{#          <input type="{{ field.widget_type }}" {{ field.label }}{{ field }}>#}
+{#     {% endfor %}#}
+{#  {% for error in form.errors %}#}
+{#            <p>{{ error }}</p>#}
+{#    {% endfor %}#}
+{{ form.as_p }}
+     <button type="submit" class="waves-effect waves light btn-large">Zaktualizuj profil</button>
+ </form>
+
+    <a href="/password"  class="waves-effect waves light btn-large" >Zmien haslo</a>
+</section>
+</header>
+
+{% endblock %}
+

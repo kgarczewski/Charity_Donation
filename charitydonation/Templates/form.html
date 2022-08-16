@@ -300,7 +300,7 @@
 
     <footer>
       <div class="contact">
-        <h2>Skontaktuj się z nami {{ categories }}</h2>
+        <h2>Skontaktuj się z nami</h2>
         <h3>Formularz kontaktowy</h3>
         <form class="form--contact">
           <div class="form-group form-group--50">
@@ -382,11 +382,6 @@ $(document).ready(function (){
 
     });
 
-{#$('.checkbox-org').on('change', function(){#}
-{#  var line_spacing2 = $("input[type=radio]:checked").val();#}
-{#  alert(line_spacing2); //this is OK#}
-{#});#}
-
 $('#form1').submit('submit', function (e){
     e.preventDefault();
     $('#request-btn').ready(function (){
@@ -450,11 +445,18 @@ function showData(){
     var time = $('#time').val();
     $('#czas').html(time);
 
-    var rzeczy = $("input[type='checkbox'][name='categories']:checked").val()
-    $('#rzeczy').html(rzeczy);
+    $('#request-btn').ready(function () {
+        var id = [];
+        $(':checkbox:checked').each(function (i) {
+            id[i] = $(this).val()
+            console.log(id)
+        })
+        $('#rzeczy').html(id);
+    })
 
 
 }
+
     </script>
 
   {% endblock scripts %}
