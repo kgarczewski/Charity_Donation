@@ -1,4 +1,26 @@
-<h1>Screenshots:</h1>
+<h2>Charity Donation is an on-line service which allows users to support charitites with voluntary donations.</h2>
+
+Site access features:
+
+- User must be logged in to make a donation.
+ - For signup user is required to give email and password.
+ - For login the user will be required to enter email and password only.
+    
+Donation features:
+
+- Logged user can support any charity from list according to donations category
+- To complete donation user have to confirm form
+- After succesfull donation (form validation) user get confirmation message
+
+User profile:
+
+- Logged user have userprofile
+- User has access to his/her own donations
+- User can change donation status to picked up by the courier
+
+
+  
+<h3>Screenshots:</h3>
 Register
 
 ![Screenshot from 2022-08-21 15-52-09](https://user-images.githubusercontent.com/103775561/185794369-c8eed4de-977d-4814-9d98-5965971faea1.png)
