@@ -5,7 +5,7 @@ from django.contrib.auth.decorators import login_required
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
-from django.db.models import Count
+from django.db.models import Count, Q
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
@@ -33,15 +33,15 @@ class LandingPage(View):
 
     def get(self, request):
 
-        institutions = Institution.objects.filter(type=1).order_by('-id').distinct().values()
+        institutions = Institution.objects.filter(type=1).order_by('-id').distinct()
         institutions2 = Institution.objects.filter(type=2).order_by('-id').distinct()
         institutions3 = Institution.objects.filter(type=3).order_by('-id').distinct()
         page = request.GET.get('page', 1)
         page2 = request.GET.get('page', 1)
         page3 = request.GET.get('page', 1)
-        paginator = Paginator(institutions, 2)
-        paginator2 = Paginator(institutions2, 2)
-        paginator3 = Paginator(institutions3, 2)
+        paginator = Paginator(institutions, 4)
+        paginator2 = Paginator(institutions2, 4)
+        paginator3 = Paginator(institutions3, 4)
         donation = Donation.objects.all()
         q = sum(donation.values_list('quantity', flat=True))
         i = Donation.objects.values('institution').annotate(instituiton=Count('institution')).order_by('institution')
@@ -80,13 +80,15 @@ class DonationView(View):
         return render(request, "form-confirmation.html")
 
 
-class UserProfile(View):
+class UserProfile(LoginRequiredMixin, View):
+    login_url = '/login/'
     def get(self, request):
         donations = Donation.objects.filter(user=request.user)
         return render(request, 'user-profile.html', {'donations': donations})
 
 
-class UserDonation(View):
+class UserDonation(LoginRequiredMixin, View):
+    login_url = '/login/'
     def get(self, request):
         today = datetime.date.today()
         donations = Donation.objects.filter(user=request.user).order_by('-is_taken', '-pick_up_date').reverse()
@@ -157,9 +159,10 @@ def filter_data(request):
     pick_up_date = request.GET.getlist('pick_up_date[]')
     institutions = Institution.objects.all().order_by('-id').distinct()
     if len(categories)>0:
-        institutions = Institution.objects.annotate(count=Count('categories')).filter(count=len(categories))
-        for id in categories:
-            institutions = institutions.filter(categories__id=id)
+        institutions = Institution.objects.filter(categories__in=categories).annotate(count=Count('categories')).\
+            filter(count=len(categories))
+
+
     t = render_to_string('institution-list.html', {'data': institutions})
     print(institutions)
     return JsonResponse({'data': t})
@@ -212,6 +215,7 @@ class LogoutView(LoginRequiredMixin, View):
         return redirect('landing_page')
 
 
+@login_required(login_url='/login')
 def update_profile(request):
 
     if request.method == "POST":
@@ -233,7 +237,7 @@ def change_password(request):
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)  # Important!
-            messages.success(request, 'Your password was successfully updated!')
+            messages.success(request, 'Haslo zostalo zaktualizowane!')
             return redirect('profile')
         else:
             context['form'] = form

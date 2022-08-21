@@ -7,6 +7,7 @@ from charitydonation.models import Donation
 
 
 class SignUpForm(UserCreationForm):
+    username = forms.EmailField(max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].label = 'Email'

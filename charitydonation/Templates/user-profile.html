@@ -21,6 +21,9 @@
           <li><a href="/#contact" class="btn btn--without-border">Kontakt</a></li>
         </ul>
       </nav>
+   {% for message in messages %}
+      <center><p>{{ message }}</p></center>
+      {% endfor %}
                     {% if request.user.first_name %}
                 <center> imie:<h1>{{ request.user.first_name }}</h1>
                 {% endif %}
