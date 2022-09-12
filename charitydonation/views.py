@@ -8,7 +8,7 @@ from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Count, Q
 from django.http import JsonResponse, HttpResponse
 from django.shortcuts import render, redirect
-from django.contrib.auth import login, authenticate, logout, update_session_auth_hash
+from django.contrib.auth import login, authenticate, logout, update_session_auth_hash, get_user_model
 from django.views import View
 from django.views.generic import ListView, UpdateView, CreateView
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
@@ -19,13 +19,91 @@ from django.core import serializers
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.template.loader import render_to_string
 import datetime
+from django.template.loader import render_to_string
+from django.contrib.sites.shortcuts import get_current_site
+from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
+from django.utils.encoding import force_bytes, force_str
+from django.core.mail import EmailMessage
+
+from charitydonation.tokens import account_activation_token
 
 
 # Create your views here.
 
+"""
+
+"""
+def activate(request, uidb64, token):
+    """Generates and sends a token which enables user to activate himself/herself."""
+    User = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        user.is_active = True
+        user.save()
+
+        messages.success(request, 'Aktywacja przebiegla pomyslnie. Mozesz sie zalogowac')
+        return redirect('login')
+    else:
+        messages.error(request, 'Link aktywacyjny wgasl')
+
+    return redirect('landing_page')
+
+def activateEmail(request, user, to_email):
+
+    mail_subject = "Aktywacja konta"
+    message = render_to_string('template_activate_account.html', {
+        'user': user.username,
+        'domain': get_current_site(request).domain,
+        'uid': urlsafe_base64_encode(force_bytes(user.pk)),
+        'token': account_activation_token.make_token(user),
+        'protocol': 'https' if request.is_secure() else 'http'
+
+    })
+    email = EmailMessage(mail_subject, message, to=[user])
+    if email.send():
+        messages.success(request, f' {user} Sprawdz swoja skrzynke {to_email} i kliknij link aktywacyjny.')
+    else:
+        messages.error(request, f'Nie udalo sie wyslac wiadomosci na adres {user}')
+
+
+def register(request):
+    """Creates a new inactive user."""
+    context = {}
+    if request.POST:
+        form = SignUpForm(request.POST)
+        if form.is_valid():
+            first_name = form.cleaned_data.get('first_name')
+            last_name = form.cleaned_data.get('last_name')
+            username = form.cleaned_data.get('username')
+            password = form.cleaned_data.get('password1')
+            user = form.save(commit=False)
+            user.is_active = False
+            user.save()
+            activateEmail(request, user, form.cleaned_data.get('email'))
+            new_user = authenticate(username=username, password=password)
+
+            if new_user is not None:
+                messages.error(request, 'Rejestracja przebiegła pomyślnie. Możesz zalogować się na swoje konto')
+                login(request, new_user)
+                return redirect('login')
+        else:
+            context['form'] = form
+    else:
+        form = SignUpForm()
+        context['form'] = form
+    return render(request, 'register.html', context)
+
 
 class LandingPage(View):
-
+    """
+    Displays total donatedet bags and number of institutions which recieved donations. Also, it displays
+    first page of every type paginated institutions. The rest of pages are dinamicaly loaded, without page reload,
+    with the use of JavaScript script, which fetches pages from PaginationApiView.
+    """
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["is_super"] = self.request.user.is_superuser
@@ -76,11 +154,13 @@ class JsonLanding(View):
 
 
 class DonationView(View):
+    """Renders confirmation information about realized donation"""
     def get(self, request):
         return render(request, "form-confirmation.html")
 
 
 class UserProfile(LoginRequiredMixin, View):
+
     login_url = '/login/'
     def get(self, request):
         donations = Donation.objects.filter(user=request.user)
@@ -168,27 +248,7 @@ def filter_data(request):
     return JsonResponse({'data': t})
 
 
-def register(request):
-    context = {}
-    if request.POST:
-        form = SignUpForm(request.POST)
-        if form.is_valid():
-            first_name = form.cleaned_data.get('first_name')
-            last_name = form.cleaned_data.get('last_name')
-            username = form.cleaned_data.get('username')
-            password = form.cleaned_data.get('password1')
-            form.save()
-            new_user = authenticate(username=username, password=password)
-            if new_user is not None:
-                messages.error(request, 'Rejestracja przebiegła pomyślnie. Możesz zalogować się na swoje konto')
-                login(request, new_user)
-                return redirect('login')
-        else:
-            context['form'] = form
-    else:
-        form = SignUpForm()
-        context['form'] = form
-    return render(request, 'register.html', context)
+
 
 
 class Login(View):
