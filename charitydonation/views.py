@@ -28,11 +28,6 @@ from django.core.mail import EmailMessage
 from charitydonation.tokens import account_activation_token
 
 
-# Create your views here.
-
-"""
-
-"""
 def activate(request, uidb64, token):
     """Generates and sends a token which enables user to activate himself/herself."""
     User = get_user_model()
@@ -52,8 +47,9 @@ def activate(request, uidb64, token):
 
     return redirect('landing_page')
 
-def activateEmail(request, user, to_email):
 
+def activateEmail(request, user, to_email):
+    """Generates and sends email with activation link"""
     mail_subject = "Aktywacja konta"
     message = render_to_string('template_activate_account.html', {
         'user': user.username,
@@ -100,10 +96,11 @@ def register(request):
 
 class LandingPage(View):
     """
-    Displays total donatedet bags and number of institutions which recieved donations. Also, it displays
-    first page of every type paginated institutions. The rest of pages are dinamicaly loaded, without page reload,
-    with the use of JavaScript script, which fetches pages from PaginationApiView.
+    Displays total donated bags and number of institutions which received donations. Also, it displays
+    first page of every type paginated institutions. The rest of pages are dynamically loaded, without page reload,
+    with the use of JavaScript.
     """
+
     def get_context_data(self, **kwargs):
         context = super().get_context_data(**kwargs)
         context["is_super"] = self.request.user.is_superuser
@@ -144,6 +141,9 @@ class LandingPage(View):
 
 
 class JsonLanding(View):
+    """
+    Dynamically displays total amount of donated bags
+    """
     def get(self, request, *args, **kwargs):
         if request.headers.get('x-requested-with') == 'XMLHttpRequest':
             donation = Donation.objects.all()
@@ -155,29 +155,38 @@ class JsonLanding(View):
 
 class DonationView(View):
     """Renders confirmation information about realized donation"""
+
     def get(self, request):
         return render(request, "form-confirmation.html")
 
 
 class UserProfile(LoginRequiredMixin, View):
-
+    """
+    Displays user profile with details information
+    """
     login_url = '/login/'
+
     def get(self, request):
         donations = Donation.objects.filter(user=request.user)
         return render(request, 'user-profile.html', {'donations': donations})
 
 
 class UserDonation(LoginRequiredMixin, View):
+    """
+    Displays users donations with details. Allows user to update donation status.
+    """
     login_url = '/login/'
+
     def get(self, request):
         today = datetime.date.today()
         donations = Donation.objects.filter(user=request.user).order_by('-is_taken', '-pick_up_date').reverse()
         return render(request, 'my-donations.html', {'donations': donations, 'today': today})
+
     def post(self, request):
         today = datetime.date.today()
         is_taken = request.POST.get('is_taken')
         print(is_taken)
-        donations = Donation.objects.filter(user=request.user).order_by('-is_taken',  '-pick_up_date').reverse()
+        donations = Donation.objects.filter(user=request.user).order_by('-is_taken', '-pick_up_date').reverse()
         id_list = request.POST.getlist('ids')
         donations.update(is_taken=False)
         for i in id_list:
@@ -238,17 +247,13 @@ def filter_data(request):
     categories = request.GET.getlist('category[]')
     pick_up_date = request.GET.getlist('pick_up_date[]')
     institutions = Institution.objects.all().order_by('-id').distinct()
-    if len(categories)>0:
-        institutions = Institution.objects.filter(categories__in=categories).annotate(count=Count('categories')).\
+    if len(categories) > 0:
+        institutions = Institution.objects.filter(categories__in=categories).annotate(count=Count('categories')). \
             filter(count=len(categories))
-
 
     t = render_to_string('institution-list.html', {'data': institutions})
     print(institutions)
     return JsonResponse({'data': t})
-
-
-
 
 
 class Login(View):
@@ -277,7 +282,6 @@ class LogoutView(LoginRequiredMixin, View):
 
 @login_required(login_url='/login')
 def update_profile(request):
-
     if request.method == "POST":
         user_form = UpdateUserForm(request.POST, instance=request.user)
         if user_form.is_valid():
@@ -290,7 +294,6 @@ def update_profile(request):
 
 
 def change_password(request):
-
     context = {}
     if request.POST:
         form = PasswordChangeForm(request.user, request.POST)
@@ -305,4 +308,3 @@ def change_password(request):
         form = PasswordChangeForm(request.user)
         context['form'] = form
     return render(request, 'change_password.html', context)
-

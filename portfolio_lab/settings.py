@@ -144,9 +144,7 @@ TIME_INPUT_FORMATS = ('%H:%M',)
 # Emailing settings
 EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
 EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_FROM = 'aarszawin@gmail.com'
-EMAIL_HOST_USER = 'aarszawin@gmail.com'
-EMAIL_HOST_PASSWORD = 'vrwcrplczgslrzre'
+
 EMAIL_PORT = 587
 EMAIL_USE_TLS = True
 
