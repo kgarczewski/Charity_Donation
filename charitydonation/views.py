@@ -11,7 +11,7 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash, get_user_model
 from django.views import View
 from django.views.generic import ListView, UpdateView, CreateView
-from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm
+from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm, PasswordResetForm, SetPasswordForm
 from charitydonation.models import Donation, Institution, Category
 from charitydonation.forms import SignUpForm, UpdateUserForm
 from django.contrib import messages
@@ -24,7 +24,6 @@ from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
 from django.core.mail import EmailMessage
-
 from charitydonation.tokens import account_activation_token
 
 
@@ -61,7 +60,7 @@ def activateEmail(request, user, to_email):
     })
     email = EmailMessage(mail_subject, message, to=[user])
     if email.send():
-        messages.success(request, f' {user} Sprawdz swoja skrzynke {to_email} i kliknij link aktywacyjny.')
+        messages.success(request, f'Sprawdz swoja skrzynke {user} i kliknij link aktywacyjny.')
     else:
         messages.error(request, f'Nie udalo sie wyslac wiadomosci na adres {user}')
 
@@ -154,7 +153,9 @@ class JsonLanding(View):
 
 
 class DonationView(View):
-    """Renders confirmation information about realized donation"""
+    """
+    Renders confirmation info about realized donation.
+    """
 
     def get(self, request):
         return render(request, "form-confirmation.html")
@@ -162,7 +163,7 @@ class DonationView(View):
 
 class UserProfile(LoginRequiredMixin, View):
     """
-    Displays user profile with details information
+    Displays user profile with details information.
     """
     login_url = '/login/'
 
@@ -197,6 +198,9 @@ class UserDonation(LoginRequiredMixin, View):
 
 @login_required(login_url='/login')
 def donation_add_view(request):
+    """
+    Multiple step donation form.
+    """
     if request.method == 'POST':
         quantity = request.POST['quantity']
         inst = request.POST['institution']
@@ -244,6 +248,9 @@ def donation_add_view(request):
 
 
 def filter_data(request):
+    """
+    Dynamically filtering institutions by chosen categories.
+    """
     categories = request.GET.getlist('category[]')
     pick_up_date = request.GET.getlist('pick_up_date[]')
     institutions = Institution.objects.all().order_by('-id').distinct()
@@ -257,6 +264,9 @@ def filter_data(request):
 
 
 class Login(View):
+    """
+    After successful authentication redirect to landing page.
+    """
     def get(self, request):
         return render(request, 'login.html')
 
@@ -275,6 +285,9 @@ class Login(View):
 
 
 class LogoutView(LoginRequiredMixin, View):
+    """
+    Redirect to main page after logout.
+    """
     def get(self, request):
         logout(request)
         return redirect('landing_page')
@@ -282,6 +295,9 @@ class LogoutView(LoginRequiredMixin, View):
 
 @login_required(login_url='/login')
 def update_profile(request):
+    """
+    Allows user to update their profile.
+    """
     if request.method == "POST":
         user_form = UpdateUserForm(request.POST, instance=request.user)
         if user_form.is_valid():
@@ -294,6 +310,9 @@ def update_profile(request):
 
 
 def change_password(request):
+    """
+    Allows user to change their password. Requires old password.
+    """
     context = {}
     if request.POST:
         form = PasswordChangeForm(request.user, request.POST)
@@ -308,3 +327,68 @@ def change_password(request):
         form = PasswordChangeForm(request.user)
         context['form'] = form
     return render(request, 'change_password.html', context)
+
+
+def passwordReset(request):
+    if request.method == 'POST':
+        form = PasswordResetForm(request.POST)
+        if form.is_valid():
+            user_email = form.cleaned_data['email']
+            associated_user = get_user_model().objects.filter(Q(username=user_email)).first()
+            if associated_user:
+                subject = "Resetuj haslo"
+                message = render_to_string("reset_password_confirmation.html", {
+                    'user': associated_user,
+                    'domain': get_current_site(request).domain,
+                    'uid': urlsafe_base64_encode(force_bytes(associated_user.pk)),
+                    'token': account_activation_token.make_token(associated_user),
+                    "protocol": 'https' if request.is_secure() else 'http'
+                })
+                email = EmailMessage(subject, message, to=[associated_user.username])
+                if email.send():
+                    messages.success(request,
+                                     """
+                                     Zresetowales haslo!
+                                     
+                                         Jesli podany przez Ciebie email jest polaczony z kontem w serwisie, otrzymasz maila z instrukcja resetu hasla. 
+                                         Wkrotce powinienes otrzymac maila.<br>Jesli wiadomosc sie nie pojawi sprawdz poprawnosc wprowadzonego adresu i sprawdz folder spam.
+                                     
+                                     """
+                                     )
+                else:
+                    messages.error(request, "Wystapil problem z resetem hasla, <b>SERVER PROBLEM</b>")
+            else:
+                messages.error(request, "Nie ma konta powiazanego z tym adresem email")
+
+            return redirect('login')
+
+    form = PasswordResetForm
+    return render(request=request,
+                  template_name='reset_password.html',
+                  context={'form':form})
+
+def passwordResetConfirm(request, uidb64, token):
+    User = get_user_model()
+    try:
+        uid = force_str(urlsafe_base64_decode(uidb64))
+        user = User.objects.get(pk=uid)
+    except:
+        user = None
+    if user is not None and account_activation_token.check_token(user, token):
+        if request.method == 'POST':
+            form = SetPasswordForm(user, request.POST)
+            if form.is_valid():
+                form.save()
+                messages.success(request, 'Haslo zostalo zmienione. Mozesz sie zalogowac.')
+                return redirect('login')
+            else:
+                for error in list(form.errors.values()):
+                    messages.error(request, error)
+
+        form = SetPasswordForm(user)
+        return render(request, 'reset_password_con.html', {'form':form})
+
+    else:
+        messages.error(request, 'Link resetujacy wygasl')
+    messages.error(request, 'Cos poszlo nie tak, przekierowanie na strone glowna.')
+    return redirect('landing_page')

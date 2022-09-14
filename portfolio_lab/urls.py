@@ -31,7 +31,10 @@ urlpatterns = [
     path('update_profile/', views.update_profile, name='update_profile'),
     path('password/', views.change_password, name='password'),
     path('donations/', views.UserDonation.as_view(), name='donation'),
-    path('activate/<uidb64>/<token>', views.activate, name='activate')
+    path('activate/<uidb64>/<token>', views.activate, name='activate'),
+    path('password_reset/', views.passwordReset, name='password_reset'),
+    path('reset/<uidb64>/<token>', views.passwordResetConfirm, name='password_reset_confirmation'),
+
 
 
 ]

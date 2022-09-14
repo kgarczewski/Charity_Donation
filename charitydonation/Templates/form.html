@@ -76,7 +76,7 @@
 
       <div class="form--steps-container">
         <div class="form--steps-counter">Krok <span>1</span>/5</div>
-
+                      <div id="error"></div>
         <form action='/add_donation/' method="POST" id="form1">
         {% csrf_token %}
           <!-- STEP 1: class .active is switching steps -->
@@ -160,22 +160,22 @@
               <div class="form-section--column">
                 <h4>Adres odbioru</h4>
                 <div class="form-group form-group--inline">
-                  <label> Ulica <input type="text" name="address" id="address" /> </label>
+                  <label> Ulica <input type="text" name="address" id="address" required/> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
-                  <label> Miasto <input type="text" name="city" id="city" /> </label>
+                  <label> Miasto <input type="text" name="city" id="city" required/> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
                   <label>
-                    Kod pocztowy <input type="text" name="postcode" id="postcode" />
+                    Kod pocztowy <input type="text" pattern="[0-9]{5}" name="postcode" id="postcode" required/>
                   </label>
                 </div>
 
                 <div class="form-group form-group--inline">
                   <label>
-                    Numer telefonu <input type="phone" name="phone" id="phone" />
+                    Numer telefonu <input type="phone" name="phone" id="phone" required/>
                   </label>
                 </div>
               </div>
@@ -183,11 +183,11 @@
               <div class="form-section--column">
                 <h4>Termin odbioru</h4>
                 <div class="form-group form-group--inline">
-                  <label> Data <input type="date" name="data" id="data" /> </label>
+                  <label> Data <input type="date" name="data" id="data" required/> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
-                  <label> Godzina <input type="time" name="time" id="time" value="00:00" /> </label>
+                  <label> Godzina <input type="time" name="time" id="time" value="00:00" required/> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
@@ -252,7 +252,7 @@
                 </div>
               </div>
             </div>
-
+              <div id="error"></div>
             <div class="form-group form-group--buttons">
               <button type="button" class="btn prev-step">Wstecz</button>
               <button type="submit" class="btn" >Potwierdzam</button>
@@ -384,6 +384,21 @@ $('#form1').submit('submit', function (e){
         })
 })
     });
+const postcode = document.getElementById('postcode')
+const form = document.getElementById('form1')
+const errorElement = document.getElementById('error')
+
+form.addEventListener('submit', (e) => {
+    let messages = []
+    if (postcode.value === '' || postcode.value == null) {
+        messages.push('Kod pocztowy jest wymagany')
+    }
+    if (messages.length > 0){
+        e.preventDefault()
+        errorElement.innerText = messages.join(', ')
+    }
+
+})
 function showData(){
     var quantity = $('#bags').val();
     $('#quantity').html(quantity);
