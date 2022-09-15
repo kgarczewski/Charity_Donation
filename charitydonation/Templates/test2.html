@@ -6,9 +6,9 @@
           <li class="logged-user">
             Witaj {{ request.user.first_name }}
             <ul class="dropdown">
-              <li><a href={% url "profile" %}>Profil</a></li>
+              <li><a href="#">Profil</a></li>
               <li><a href="#">Ustawienia</a></li>
-               {% if user.is_staff %}
+                {% if request.user.is_superuser %}
                     <li><a href="/admin">Panel administracyjny</a></li>
                     {% endif %}
               <li><a href={% url "logout" %}>Wyloguj</a></li>
@@ -17,14 +17,12 @@
         </ul>
 
         <ul>
-          <li><a href="{% url "landing_page" %}" class="btn btn--without-border">Start</a></li>
+          <li><a href="{% url "landing_page" %}" class="btn btn--without-border active">Start</a></li>
           <li><a href="/#steps" class="btn btn--without-border">O co chodzi?</a></li>
           <li><a href="/#about-us" class="btn btn--without-border">O nas</a></li>
           <li><a href="/#help" class="btn btn--without-border">Fundacje i organizacje</a></li>
-          <li><a href="{% url "add_donation" %}" class="btn btn--without-border active">Przekaż dary</a></li>
-{#          <li><a href="/#contact" class="btn btn--without-border">Kontakt</a></li>#}
-            <li><a href="{% url 'add_donation' %}#container" class="btn btn--without-border">Kontakt</a></li>
-
+          <li><a href="{% url "add_donation" %}" class="btn btn--without-border">Przekaż dary</a></li>
+          <li><a href="/#contact" class="btn btn--without-border">Kontakt</a></li>
         </ul>
       </nav>
 
@@ -78,13 +76,13 @@
 
       <div class="form--steps-container">
         <div class="form--steps-counter">Krok <span>1</span>/5</div>
-                      <div id="error"></div>
-        <form action='/add_donation/' method="POST" id="form1">
-        {% csrf_token %}
+
+        <form action="summary.html" method="post">
           <!-- STEP 1: class .active is switching steps -->
           <div data-step="1" class="active">
             <h3>Zaznacz co chcesz oddać:</h3>
   {% for c in category %}
+      {{ c.id }}
             <div class="form-group form-group--checkbox">
               <label>
                   <input
@@ -103,7 +101,42 @@
               </label>
             </div>
                     {% endfor %}
-
+{##}
+{#            <div class="form-group form-group--checkbox">#}
+{#              <label>#}
+{#                <input#}
+{#                  type="checkbox"#}
+{#                  name="categories"#}
+{#                  value="clothes-useless"#}
+{#                />#}
+{#                <span class="checkbox"></span>#}
+{#                <span class="description">ubrania, do wyrzucenia</span>#}
+{#              </label>#}
+{#            </div>#}
+{##}
+{#            <div class="form-group form-group--checkbox">#}
+{#              <label>#}
+{#                <input type="checkbox" name="categories" value="toys" />#}
+{#                <span class="checkbox"></span>#}
+{#                <span class="description">zabawki</span>#}
+{#              </label>#}
+{#            </div>#}
+{##}
+{#            <div class="form-group form-group--checkbox">#}
+{#              <label>#}
+{#                <input type="checkbox" name="categories" value="books" />#}
+{#                <span class="checkbox"></span>#}
+{#                <span class="description">książki</span>#}
+{#              </label>#}
+{#            </div>#}
+{##}
+{#            <div class="form-group form-group--checkbox">#}
+{#              <label>#}
+{#                <input type="checkbox" name="categories" value="other" />#}
+{#                <span class="checkbox"></span>#}
+{#                <span class="description">inne</span>#}
+{#              </label>#}
+{#            </div>#}
 
             <div class="form-group form-group--buttons">
               <button type="button" class="btn next-step" id="request-btn">Dalej</button>
@@ -136,7 +169,7 @@
             <p class="ajaxLoader">Laoding...</p>
                 {% for i in data %}
               <label>
-                <input type="radio" name="organization" id="organization" value={{ i.name }}  class="checkbox-org" data-filter="org"/>
+                <input type="radio" name="organization" id="organization" value="essa" class="checkbox-org"  data-filter="org"/>
                 <span class="checkbox radio"></span>
                 <span class="description">
                   <div class="title">{{ i.name }}</div>
@@ -162,22 +195,22 @@
               <div class="form-section--column">
                 <h4>Adres odbioru</h4>
                 <div class="form-group form-group--inline">
-                  <label> Ulica <input type="text" name="address" id="address" required/> </label>
+                  <label> Ulica <input type="text" name="address" id="address" /> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
-                  <label> Miasto <input type="text" name="city" id="city" required/> </label>
+                  <label> Miasto <input type="text" name="city" id="city" /> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
                   <label>
-                    Kod pocztowy <input type="text" pattern="[0-9]{5}" name="postcode" id="postcode" required/>
+                    Kod pocztowy <input type="text" name="postcode" id="postcode" />
                   </label>
                 </div>
 
                 <div class="form-group form-group--inline">
                   <label>
-                    Numer telefonu <input type="phone" name="phone" id="phone" required/>
+                    Numer telefonu <input type="phone" name="phone" id="phone" />
                   </label>
                 </div>
               </div>
@@ -185,11 +218,11 @@
               <div class="form-section--column">
                 <h4>Termin odbioru</h4>
                 <div class="form-group form-group--inline">
-                  <label> Data <input type="date" name="data" id="data" required/> </label>
+                  <label> Data <input type="date" name="data" id="data" /> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
-                  <label> Godzina <input type="time" name="time" id="time" value="00:00" required/> </label>
+                  <label> Godzina <input type="time" name="time" id="time" /> </label>
                 </div>
 
                 <div class="form-group form-group--inline">
@@ -202,7 +235,7 @@
             </div>
             <div class="form-group form-group--buttons">
               <button type="button" class="btn prev-step" >Wstecz</button>
-              <button type="button" class="btn next-step" id="summary" onclick="showData()" >Dalej</button>
+              <button type="button" class="btn next-step" >Dalej</button>
             </div>
           </div>
 
@@ -213,51 +246,49 @@
             <div class="summary">
               <div class="form-section" id="filteredOrg" >
                 <h4>Oddajesz:</h4>
-
                 <ul>
                   <li>
-                    <span class="icon icon-bag" id="bags"></span>
-                    <span class="summary--text "
-
-                    > <label id="quantity"></label> worki <label id="rzeczy"></label> w dobrym stanie dla dzieci</span
-
+                    <span class="icon icon-bag"></span>
+                    <span class="summary--text"
+                      >4 worki ubrań w dobrym stanie dla dzieci</span
                     >
                   </li>
-
+                      {% for i in data2 %}
                   <li>
                     <span class="icon icon-hand"></span>
                     <span class="summary--text"
-                      >Dla fundacji <label id="institution"></label></span
+                      >Dla fundacji {{ i.name }} w Warszawie</span
                     >
                   </li>
+                    {% endfor %}
                 </ul>
               </div>
 
               <div class="form-section form-section--columns">
-                <div class="form-section--column1">
+                <div class="form-section--column">
                   <h4>Adres odbioru:</h4>
                   <ul>
-                    <li><label id="street"></label></li>
-                    <li><label id="miasto"></label></li>
-                    <li><label id="kod"></label></li>
-                    <li><label id="tel"></label></li>
+                    <li>Prosta 51</li>
+                    <li>Warszawa</li>
+                    <li>99-098</li>
+                    <li>123 456 789</li>
                   </ul>
                 </div>
 
                 <div class="form-section--column">
                   <h4>Termin odbioru:</h4>
                   <ul>
-                    <li><label id="date"></label></li>
-                    <li><label id="czas"></label></li>
-
+                    <li>13/12/2018</li>
+                    <li>15:40</li>
+                    <li>Brak uwag</li>
                   </ul>
                 </div>
               </div>
             </div>
-              <div id="error"></div>
+
             <div class="form-group form-group--buttons">
               <button type="button" class="btn prev-step">Wstecz</button>
-              <button type="submit" class="btn" >Potwierdzam</button>
+              <button type="submit" class="btn" id="submit">Potwierdzam</button>
             </div>
           </div>
         </form>
@@ -265,14 +296,10 @@
     </section>
 
     <footer>
-    <a name="container"></a>
       <div class="contact">
         <h2>Skontaktuj się z nami</h2>
         <h3>Formularz kontaktowy</h3>
-
-
-             <form action="{% url 'contact' %} " method="post">
-                              {% csrf_token %}
+        <form class="form--contact">
           <div class="form-group form-group--50">
             <input type="text" name="name" placeholder="Imię" />
           </div>
@@ -281,13 +308,15 @@
           </div>
 
           <div class="form-group">
-                         <textarea name="message" placeholder="Wiadomość" rows="1"></textarea>
-
+            <textarea
+              name="message"
+              placeholder="Wiadomość"
+              rows="1"
+            ></textarea>
           </div>
 
-                 <button type="submit">Wyślij</button>
-             </form>
-
+          <button class="btn" type="submit">Wyślij</button>
+        </form>
       </div>
       <div class="bottom-line">
         <span class="bottom-line--copy">Copyright &copy; 2018</span>
@@ -333,8 +362,22 @@ $(document).ready(function (){
             $('.ajaxLoader').hide();
         }
     })
+});
+    });
+$(document).ready(function (){
+    $('.ajaxLoader').hide();
+    $(".checkbox_cat").on('click', function (){
+        var _filterObj={};
+        $('.checkbox_cat').each(function (index, ele){
+        var _filterVal=$(this).val();
+        var _filterKey=$(this).data('filter');
+        _filterObj[_filterKey]=Array.from(document.querySelectorAll('input[data-filter='+_filterKey+']:checked')).map(function (el) {
+            return el.value;
+        })
+    });
+        //run Ajax
         $.ajax({
-            url:'{% url 'add_donation' %}',
+            url:'{% url 'filter-data' %}',
             data:_filterObj,
             dataType:'json',
             beforeSend:function (){
@@ -346,103 +389,40 @@ $(document).ready(function (){
             $('.ajaxLoader').hide();
         }
     })
+});
     });
+ var formData = new FormData();
 
-    });
-
-$('#form1').submit('submit', function (e){
-    e.preventDefault();
-    $('#request-btn').ready(function (){
-    var id = [];
-    $(':checkbox:checked').each(function(i){
-            id[i]=$(this).val()
-        console.log(id)
-    })
-
-
-    console.log("create donation is working!") // sanity check
-        $.ajax({
-            method:'POST',
-            url:{% url 'add_donation' %},
-            traditional: true,
-            data:{
-                    quantity:$('#bags').val(),
-                    institution:$("input[type='radio'][name='organization']:checked").val(),
-                    categories: id,
-                    address:$('#address').val(),
-                    phone_number:$('#phone').val(),
-                    city:$('#city').val(),
-                    zip_code:$('#postcode').val(),
-                    pick_up_date:$('#data').val(),
-                    pick_up_time:$('#time').val(),
-                    pick_up_comment:$('#more_info').val(),
-                    csrfmiddlewaretoken:$('input[name=csrfmiddlewaretoken]').val(),
-
-        },
-            success : function(data) {
-                $('h2').html(data);
-                console.log(data); // log the returned json to the console
-                console.log("success"); // another sanity check
-                location.href = '/summary'
-            }
-        })
-})
-    });
-const postcode = document.getElementById('postcode')
-const form = document.getElementById('form1')
-const errorElement = document.getElementById('error')
-
-form.addEventListener('submit', (e) => {
-    let messages = []
-    if (postcode.value === '' || postcode.value == null) {
-        messages.push('Kod pocztowy jest wymagany')
-    }
-    if (messages.length > 0){
-        e.preventDefault()
-        errorElement.innerText = messages.join(', ')
-    }
-
-})
-function showData(){
-    var quantity = $('#bags').val();
-    $('#quantity').html(quantity);
-
-    var institution = $("input[type='radio'][name='organization']:checked").val();
-    $('#institution').html(institution);
-
-    var address = $('#address').val();
-    $('#street').html(address);
-
-    var city = $('#city').val();
-    $('#miasto').html(city);
-
-    var kod = $('#postcode').val();
-    $('#kod').html(kod);
-
-    var tel = $('#phone').val();
-    $('#tel').html(tel);
-
-    var date = $('#data').val();
-    $('#date').html(date);
-
-    var time = $('#time').val();
-    $('#czas').html(time);
-
-    $('#request-btn').ready(function () {
-        var id = [];
-        $(':checkbox:checked').each(function (i) {
-            id[i] = $(this).val()
-            console.log(id)
-        })
-        $('#rzeczy').html(id);
-    })
-
-
-}
-
+      $(document).on('click', '#submit', function(e) {
+        formData.append('bags', $('#bags').val())
+        formData.append('organization', $('#organization').val())
+        formData.append('address',  $('#address').val())
+          formData.append('city',  $('#city').val())
+        formData.append('postcode',  $('#postcode').val())
+        formData.append('data',  $('#data').val())
+        formData.append('time',  $('#time').val())
+        formData.append('action', 'create-post')
+        formData.append('csrfmiddlewaretoken', '{{ csrf_token }}')
+          $.ajax({
+              type: 'POST',
+              url: '{% url "add_donation" %}',
+              data: formData,
+              cache: false,
+              processData: false,
+              contentType: false,
+              enctype: 'multipart/form-data',
+              success: function (){
+                  alert('The post has been created!')
+              },
+              error: function(xhr, errmsg, err) {
+                  console.log(xhr.status + ":" + xhr.responseText)
+              }
+          })
+      })
     </script>
 
   {% endblock scripts %}
-  {% endblock %}
+
 </html>
 
+  {% endblock %}

@@ -1,8 +1,26 @@
+from django.contrib.auth.admin import UserAdmin
 from django.contrib.auth.models import User
 from django.db import models
+from django.contrib import admin
 
 
 # Create your models here.
+
+
+class MyUserAdmin(UserAdmin):
+
+    def has_delete_permission(self, request, obj=None):
+
+        if User.objects.filter(is_superuser=True).count() > 1:
+            return True
+        if obj == request.user:
+            return False
+        return False
+
+
+admin.site.unregister(User)
+admin.site.register(User, MyUserAdmin)
+
 
 class Category(models.Model):
     name = models.CharField(max_length=250)

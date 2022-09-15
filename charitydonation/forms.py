@@ -86,3 +86,4 @@ class PasswordResetForm(PasswordResetForm):
             raise forms.ValidationError('Haslo musi zawierac znaki specjalne')
         return cd['new_password2']
 
+
