@@ -45,7 +45,7 @@
 
         <div class="form-group form-group--buttons">
           <a href="/register" class="btn btn--without-border">Załóż konto</a>
-          <button class="btn" type="submit">Zaloguj się</button> 
+          <button class="btn" type="submit">Zaloguj się</button>
         </div>
 
       </form>
@@ -54,25 +54,27 @@
         <div class="contact">
           <h2>Skontaktuj się z nami</h2>
           <h3>Formularz kontaktowy</h3>
-          <form>
+
 
               {% if message %}
-                  dziekujemy za kontakt!
+            dzieki za kontakt {{ request.user}}
               {% endif %}
+            <form action="{% url 'contact' %} " method="post">
+                              {% csrf_token %}
+          <div class="form-group form-group--50">
+            <input type="text" name="name" placeholder="Imię" />
+          </div>
+          <div class="form-group form-group--50">
+            <input type="text" name="surname" placeholder="Nazwisko" />
+          </div>
 
-            <div class="form-group form-group--50">
-              <input type="text" name="name" placeholder="Imię" />
-            </div>
-            <div class="form-group form-group--50">
-              <input type="text" name="surname" placeholder="Nazwisko" />
-            </div>
-  
-            <div class="form-group">
-              <textarea name="message" placeholder="Wiadomość" rows="1"></textarea>
-            </div>
-  
-            <button class="btn" type="submit">Wyślij</button> 
-          </form>
+          <div class="form-group">
+                         <textarea name="message" placeholder="Wiadomość" rows="1"></textarea>
+
+          </div>
+
+                 <button type="submit">Wyślij</button>
+             </form>
         </div>
         <div class="bottom-line">
           <span class="bottom-line--copy">Copyright &copy; 2018</span>

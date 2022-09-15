@@ -23,8 +23,10 @@ from django.template.loader import render_to_string
 from django.contrib.sites.shortcuts import get_current_site
 from django.utils.http import urlsafe_base64_encode, urlsafe_base64_decode
 from django.utils.encoding import force_bytes, force_str
-from django.core.mail import EmailMessage
+from django.core.mail import EmailMessage, send_mail, mail_admins
 from charitydonation.tokens import account_activation_token
+from django.urls import reverse_lazy, reverse
+from django.conf import settings
 
 
 def activate(request, uidb64, token):
@@ -56,6 +58,7 @@ def activateEmail(request, user, to_email):
         'uid': urlsafe_base64_encode(force_bytes(user.pk)),
         'token': account_activation_token.make_token(user),
         'protocol': 'https' if request.is_secure() else 'http'
+
 
     })
     email = EmailMessage(mail_subject, message, to=[user])
@@ -392,3 +395,24 @@ def passwordResetConfirm(request, uidb64, token):
         messages.error(request, 'Link resetujacy wygasl')
     messages.error(request, 'Cos poszlo nie tak, przekierowanie na strone glowna.')
     return redirect('landing_page')
+
+
+def contact_form(request):
+    if request.method == 'POST':
+        sender_name = request.POST['name']
+        sender_last_name = request.POST['surname']
+        message = request.POST['message']
+        user_email = request.user.email
+        admin = User.objects.filter(is_superuser=True)
+        print(admin)
+        send_mail(
+            sender_name,
+            message,
+            user_email,
+            admin
+        )
+        return render(request, 'contact.html', {'message':message})
+    else:
+        return render(request, 'contact.html')
+
+
