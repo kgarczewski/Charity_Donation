@@ -1,6 +1,6 @@
 from django import forms
 from django.contrib.auth import get_user_model
-from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordResetForm
+from django.contrib.auth.forms import UserCreationForm, UserChangeForm, PasswordResetForm, PasswordChangeForm
 from django.contrib.auth.models import User
 from django.core.exceptions import ValidationError
 from captcha.fields import ReCaptchaField
@@ -86,4 +86,23 @@ class PasswordResetForm(PasswordResetForm):
             raise forms.ValidationError('Haslo musi zawierac znaki specjalne')
         return cd['new_password2']
 
+
+class PasswordChangeForm1(PasswordChangeForm):
+    def __init__(self, *args, **kwargs):
+        super(PasswordChangeForm, self).__init__(*args, **kwargs)
+
+    def clean_password(self):
+        special_characters = "[~\!@#\$%\^&\*\(\)_\+{}:;'\[\]]"
+        cd = self.cleaned_data
+        if cd['new_password2'] != cd['new_password1']:
+            raise forms.ValidationError('Hasla musza byc identyczne!')
+        if not any(char.isdigit() for char in cd['new_password1']):
+            raise forms.ValidationError('Haslo musi zawierac co najmniej jedna cyfre')
+        if not any(char.isalpha() for char in cd['new_password1']):
+            raise forms.ValidationError('Haslo musi zawierac co najmniej jedna litere')
+        if not any(char.isupper() for char in cd['new_password1']):
+            raise forms.ValidationError('Haslo musi zawierac co najmniej jedna wielka litere')
+        if not any(char in special_characters for char in cd['new_password1']):
+            raise forms.ValidationError('Haslo musi zawierac znaki specjalne')
+        return cd['new_password2']
 

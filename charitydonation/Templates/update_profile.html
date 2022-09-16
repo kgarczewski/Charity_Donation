@@ -23,12 +23,15 @@
       </nav>
 
    <section class="login-page">
-
+      {% for message in messages %}
+      <p>{{ message }}</p>
+      {% endfor %}
  <form  method="post" >
                        {% csrf_token %}
 
-
 {{ form.as_p }}
+         <input type="password" name="password" placeholder="Hasło" />
+
      <button type="submit" class="waves-effect waves light btn-large">Zaktualizuj profil</button>
  </form>
 

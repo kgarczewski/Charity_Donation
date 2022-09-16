@@ -13,7 +13,7 @@ from django.views import View
 from django.views.generic import ListView, UpdateView, CreateView
 from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm, PasswordResetForm, SetPasswordForm
 from charitydonation.models import Donation, Institution, Category
-from charitydonation.forms import SignUpForm, UpdateUserForm
+from charitydonation.forms import SignUpForm, UpdateUserForm, PasswordChangeForm1
 from django.contrib import messages
 from django.core import serializers
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -302,11 +302,20 @@ def update_profile(request):
     Allows user to update their profile.
     """
     if request.method == "POST":
+        password = request.POST.get('password')
+        user = authenticate(request, username=request.user.username, password=password)
         user_form = UpdateUserForm(request.POST, instance=request.user)
-        if user_form.is_valid():
-            user_form.save()
-            messages.success(request, 'Profil zostal zakutalizowany')
-            return redirect('profile')
+        if user is not None:
+            if user_form.is_valid():
+                print(request.user.password)
+                user_form.save()
+                messages.success(request, 'Profil zostal zakutalizowany')
+                return redirect('profile')
+        if password == '':
+            messages.error(request, 'Aby zaktualizowac dane konieczne jest podanie hasla!')
+        else:
+            messages.error(request, 'Wprowadzone haslo jest niepoprawne!')
+
     else:
         user_form = UpdateUserForm(instance=request.user)
     return render(request, 'update_profile.html', {'form': user_form})
@@ -318,7 +327,8 @@ def change_password(request):
     """
     context = {}
     if request.POST:
-        form = PasswordChangeForm(request.user, request.POST)
+        form = PasswordChangeForm1(request.user, request.POST)
+
         if form.is_valid():
             user = form.save()
             update_session_auth_hash(request, user)  # Important!
