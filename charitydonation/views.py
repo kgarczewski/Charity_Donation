@@ -4,6 +4,7 @@ from django.contrib.auth.decorators import login_required
 
 from django.contrib.auth.mixins import LoginRequiredMixin
 from django.contrib.auth.models import User
+from django.contrib.auth.views import PasswordChangeView
 from django.core.paginator import Paginator, PageNotAnInteger, EmptyPage
 from django.db.models import Count, Q
 from django.http import JsonResponse, HttpResponse
@@ -11,9 +12,9 @@ from django.shortcuts import render, redirect
 from django.contrib.auth import login, authenticate, logout, update_session_auth_hash, get_user_model
 from django.views import View
 from django.views.generic import ListView, UpdateView, CreateView
-from django.contrib.auth.forms import UserCreationForm, PasswordChangeForm, PasswordResetForm, SetPasswordForm
+from django.contrib.auth.forms import UserCreationForm, PasswordResetForm, SetPasswordForm
 from charitydonation.models import Donation, Institution, Category
-from charitydonation.forms import SignUpForm, UpdateUserForm, PasswordChangeForm1
+from charitydonation.forms import SignUpForm, UpdateUserForm, PasswordChangeForm, PasswordChangingForm
 from django.contrib import messages
 from django.core import serializers
 from django.contrib.auth.mixins import LoginRequiredMixin
@@ -325,9 +326,8 @@ def change_password(request):
     """
     Allows user to change their password. Requires old password.
     """
-    context = {}
     if request.POST:
-        form = PasswordChangeForm1(request.user, request.POST)
+        form = PasswordChangingForm(request.user, request.POST)
 
         if form.is_valid():
             user = form.save()
@@ -335,11 +335,10 @@ def change_password(request):
             messages.success(request, 'Haslo zostalo zaktualizowane!')
             return redirect('profile')
         else:
-            context['form'] = form
+            messages.error(request, "Wystapil problem ze zmianą hasła")
     else:
-        form = PasswordChangeForm(request.user)
-        context['form'] = form
-    return render(request, 'change_password.html', context)
+        form = PasswordChangingForm(request.user)
+    return render(request, 'change_password.html', {'form':form})
 
 
 def passwordReset(request):

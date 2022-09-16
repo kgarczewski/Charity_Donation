@@ -10,13 +10,12 @@ from charitydonation.models import Donation
 
 class SignUpForm(UserCreationForm):
     username = forms.EmailField(max_length=100, required=True, widget=forms.TextInput(attrs={'class': 'form-control'}))
+
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         self.fields['username'].label = 'Email'
         self.fields['password1'].label = 'Hasło'
         self.fields['password2'].label = 'Powtórz hasło'
-
-
 
     def clean_username(self):
         username = self.cleaned_data['username']
@@ -24,12 +23,11 @@ class SignUpForm(UserCreationForm):
             raise forms.ValidationError('Uzytkownik o takim mailu istnieje')
         return username
 
-
     def clean_password2(self):
         special_characters = "[~\!@#\$%\^&\*\(\)_\+{}:;'\[\]]"
         cd = self.cleaned_data
         if cd['password1'] != cd['password2']:
-            raise forms.ValidationError('Hasla musza byc identyczne!')
+            raise forms.ValidationError('Hasla musza byc identyczne! Rozumiesz?')
         if not any(char.isdigit() for char in cd['password1']):
             raise forms.ValidationError('Haslo musi zawierac co najmniej jedna cyfre')
         if not any(char.isalpha() for char in cd['password1']):
@@ -87,14 +85,20 @@ class PasswordResetForm(PasswordResetForm):
         return cd['new_password2']
 
 
-class PasswordChangeForm1(PasswordChangeForm):
+class PasswordChangingForm(PasswordChangeForm):
+    old_password = forms.CharField(widget=forms.PasswordInput(attrs={'class':'form-control'}))
+    new_password1 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
+    new_password2 = forms.CharField(widget=forms.PasswordInput(attrs={'class': 'form-control'}))
     def __init__(self, *args, **kwargs):
-        super(PasswordChangeForm, self).__init__(*args, **kwargs)
+        super().__init__(*args, **kwargs)
+        self.fields['old_password'].label = 'Stare Hasło'
+        self.fields['new_password1'].label = 'Hasło'
+        self.fields['new_password2'].label = 'Powtórz hasło'
 
     def clean_password(self):
         special_characters = "[~\!@#\$%\^&\*\(\)_\+{}:;'\[\]]"
-        cd = self.cleaned_data
-        if cd['new_password2'] != cd['new_password1']:
+        cd = super(PasswordChangingForm, self).clean()
+        if cd['new_password1'] != cd['new_password2']:
             raise forms.ValidationError('Hasla musza byc identyczne!')
         if not any(char.isdigit() for char in cd['new_password1']):
             raise forms.ValidationError('Haslo musi zawierac co najmniej jedna cyfre')
