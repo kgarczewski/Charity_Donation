@@ -97,7 +97,7 @@ class PasswordChangingForm(PasswordChangeForm):
 
     def clean_password(self):
         special_characters = "[~\!@#\$%\^&\*\(\)_\+{}:;'\[\]]"
-        cd = super(PasswordChangingForm, self).clean()
+        cd = self.cleaned_data
         if cd['new_password1'] != cd['new_password2']:
             raise forms.ValidationError('Hasla musza byc identyczne!')
         if not any(char.isdigit() for char in cd['new_password1']):

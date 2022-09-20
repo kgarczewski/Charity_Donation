@@ -7,7 +7,7 @@
             Witaj {{ request.user.first_name }}
             <ul class="dropdown">
               <li><a href={% url "profile" %}>Profil</a></li>
-              <li><a href="#">Ustawienia</a></li>
+              <li><a href="{% url 'update_profile' %}">Ustawienia</a></li>
                {% if user.is_staff %}
                     <li><a href="/admin">Panel administracyjny</a></li>
                     {% endif %}

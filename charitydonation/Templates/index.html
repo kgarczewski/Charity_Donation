@@ -220,6 +220,11 @@
           <div class="form-group form-group--50">
             <input type="text" name="surname" placeholder="Nazwisko" />
           </div>
+              {% if not request.user.is_authenticated %}
+              <div class="form-group form-group--50">
+            <input type="email" name="email" placeholder="Email" />
+          </div>
+              {% endif %}
 
           <div class="form-group">
                          <textarea name="message" placeholder="Wiadomość" rows="1"></textarea>

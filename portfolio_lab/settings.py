@@ -41,6 +41,7 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'charitydonation',
     'pure_pagination',
+    'crispy_forms',
 ]
 
 MIDDLEWARE = [
@@ -70,23 +71,17 @@ TEMPLATES = [
         },
     },
 ]
-
+CRISPY_TEMPLATE_PACK = 'bootstrap4'
 WSGI_APPLICATION = 'portfolio_lab.wsgi.application'
 
 
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
-    'default': {
-        'HOST': '127.0.0.1',
-        'PORT': '5432',
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': 'charity-donation',
-        'USER': 'postgres',
-        'PASSWORD': 'coderslab',
-    }
-}
+# DATABASES = {
+#
+#     }
+# }
 
 
 # Password validation
@@ -142,12 +137,6 @@ PAGINATION_SETTINGS = {
 TIME_INPUT_FORMATS = ('%H:%M',)
 
 # Emailing settings
-EMAIL_BACKEND = 'django.core.mail.backends.smtp.EmailBackend'
-EMAIL_HOST = 'smtp.gmail.com'
-EMAIL_FROM = ''
-EMAIL_HOST_USER = ''
-EMAIL_HOST_PASSWORD = ''
-EMAIL_PORT = 587
-EMAIL_USE_TLS = True
+
 
 PASSWORD_RESET_TIMEOUT = 14400

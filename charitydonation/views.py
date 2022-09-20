@@ -326,6 +326,7 @@ def change_password(request):
     """
     Allows user to change their password. Requires old password.
     """
+    context = {}
     if request.POST:
         form = PasswordChangingForm(request.user, request.POST)
 
@@ -336,8 +337,11 @@ def change_password(request):
             return redirect('profile')
         else:
             messages.error(request, "Wystapil problem ze zmianą hasła")
+            context['form'] = form
     else:
         form = PasswordChangingForm(request.user)
+
+
     return render(request, 'change_password.html', {'form':form})
 
 
@@ -411,15 +415,18 @@ def contact_form(request):
         sender_name = request.POST['name']
         sender_last_name = request.POST['surname']
         message = request.POST['message']
-        user_email = request.user.email
+        if not request.user.is_authenticated:
+            user_email = request.POST['email']
+        else:
+            user_email = request.user.email
         admin = User.objects.filter(is_superuser=True)
-        print(admin)
+
         send_mail(
             sender_name,
             message,
             user_email,
             admin
-        )
+            )
         return render(request, 'contact.html', {'message':message})
     else:
         return render(request, 'contact.html')
