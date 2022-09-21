@@ -239,9 +239,7 @@ def donation_add_view(request):
             content_type="application/json"
         )
     categories = request.GET.getlist('category[]')
-    print(categories)
     quantity = request.GET.getlist('bags[]')
-    print(quantity)
     category = Category.objects.all()
     qs = Institution.objects.all()
     pick_up_date = request.GET.getlist('pick_up_date[]')
@@ -263,7 +261,6 @@ def filter_data(request):
             filter(count=len(categories))
 
     t = render_to_string('institution-list.html', {'data': institutions})
-    print(institutions)
     return JsonResponse({'data': t})
 
 
@@ -306,6 +303,7 @@ def update_profile(request):
         password = request.POST.get('password')
         user = authenticate(request, username=request.user.username, password=password)
         user_form = UpdateUserForm(request.POST, instance=request.user)
+
         if user is not None:
             if user_form.is_valid():
                 print(request.user.password)

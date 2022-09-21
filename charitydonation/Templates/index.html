@@ -5,7 +5,7 @@
         <ul class="nav--actions">
         {% if request.user.is_authenticated %}
           <li class="logged-user">
-            Witaj {{ request.user.first_name }}
+            Witaj {{ request.user }}
             <ul class="dropdown">
               <li><a href={% url "profile" %}>Profil</a></li>
               <li><a href="{% url "update_profile" %}">Ustawienia</a></li>
@@ -190,8 +190,8 @@
        <nav id="pagination3">
         {%  for i in institutions3.paginator.page_range %}
             {% if institutions3.number == i %}
-       <ul class="help--slides-pagination3">
-            <li class="btn btn--small btn--without-border active"><a class="page-link" href="{{ request.path }}?page={{ i }}" >{{ i }}</a></li>
+       <ul class="help--slides-pagination">
+            <li class="btn btn--small btn--without-border active"><a class="page-link" href="{{ request.path }}?page={{ i }}">{{ i }}</a></li>
             {% else %}
             <li class="btn btn--small btn--without-border"><a class="page-link" href="{{ request.path }}?page={{ i }}">{{ i }}</a></li>
     </ul>

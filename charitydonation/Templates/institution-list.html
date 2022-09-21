@@ -3,7 +3,7 @@
             <p class="ajaxLoader">Laoding...</p>
                 {% for i in data %}
               <label>
-                <input type="radio" name="organization" value="{{ i.id }}" />
+                <input type="radio" name="organization" value={{ i.id }} id="{{ i.get_type_display }}{{ i.name }}" />
                 <span class="checkbox"></span>
                 <span class="description">
                   <div class="title">{{ i.name }}</div>

@@ -94,6 +94,7 @@
                   name="categories"
                   id="selection-button"
                   value= {{ c.id }}
+                          names= {{ c.name }}
 
                 />
                 <span class="checkbox"></span>
@@ -227,7 +228,7 @@
                   <li>
                     <span class="icon icon-hand"></span>
                     <span class="summary--text"
-                      >Dla fundacji <label id="institution"></label></span
+                      >Dla  <label id="institution"></label></span
                     >
                   </li>
                 </ul>
@@ -407,7 +408,7 @@ function showData(){
     var quantity = $('#bags').val();
     $('#quantity').html(quantity);
 
-    var institution = $("input[type='radio'][name='organization']:checked").val();
+    var institution = $("input[type='radio'][name='organization']:checked").attr('id');
     $('#institution').html(institution);
 
     var address = $('#address').val();
@@ -430,11 +431,15 @@ function showData(){
 
     $('#request-btn').ready(function () {
         var id = [];
-        $(':checkbox:checked').each(function (i) {
-            id[i] = $(this).val()
-            console.log(id)
+        $(':checkbox:checked').map(function (i) {
+            id[i] = $(this).attr('names')
         })
-        $('#rzeczy').html(id);
+        for (var i = 0; i < id.length; i++) {
+            $('#rzeczy').html(id + ' ');
+
+
+        }
+
     })
 
 
